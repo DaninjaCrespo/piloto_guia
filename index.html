@@ -3,34 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guia Detetive | Motor de Névoa</title>
+    <title>Guia Detetive | Ato Demo</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         
-        <h1>Rastreador de Anomalias</h1>
-        <p class="instruction">O perímetro está bloqueado por interferência. Desloque-se para os pontos de energia para dissipar a névoa.</p>
+        <!-- TELA 1: O GANCHO E AVISO DE IMERSÃO -->
+        <div id="tela-intro" class="screen active">
+            <h1>Guia Detetive</h1>
+            <p class="subtitle">Ato Demo: A Maleta do Maquinista</p>
+            
+            <div class="alert-box">
+                <p>🎧 <strong>AVISO DE IMERSÃO</strong></p>
+                <p>Para máxima experiência na névoa, use fones de ouvido. O Modo Visual (Dossiê) também está ativado por padrão.</p>
+            </div>
 
-<!-- O MAPA COM A NÉVOA DE GUERRA -->
-        <div class="fog-container">
-            <!-- Usando o seu arquivo de recorte correto -->
-            <img src="assets/mapa_zoom.png" id="mapa-fundo" class="mapa-fundo" alt="Mapa Parte Baixa Zoom">
-            <!-- A lona onde a névoa será desenhada e apagada -->
-            <canvas id="fog-canvas" class="fog-canvas"></canvas>
+            <div class="story-box">
+                <p>Você encontrou uma maleta antiga trancada. Há um rádio acoplado nela emitindo estática pesada.</p>
+                <p>O sinal está criptografado. Precisamos triangular a frequência caminhando pelo perímetro para limpar a interferência e achar a chave.</p>
+            </div>
+            <button class="btn" onclick="iniciarMissao()">Ligar Sistema</button>
         </div>
 
-        <p id="status-missao" class="morse-tip">Sinal Detectado: Largo dos Padeiros (Ponto 7).</p>
+        <!-- TELA 2: RADAR, OSCILOSCÓPIO E MAPAS -->
+        <div id="tela-investigacao" class="screen hidden">
+            <h2>Rastreador de Frequência</h2>
+            
+            <!-- Osciloscópio Visual -->
+            <div class="oscilloscope">
+                <div id="onda" class="wave chaotic"></div>
+            </div>
+            <p id="status-missao" class="morse-tip">Sinal: Caótico (0%) - Analise o Mapa</p>
 
-        <!-- BOTÕES SIMULANDO OS GATILHOS DO GPS -->
-        <div class="radar-points">
-            <button id="btn-lyra" class="btn btn-radio" onclick="ativarGatilho('lyra')">📍 Chegar no Clube Lyra (15)</button>
-            <button id="btn-mercado" class="btn btn-radio" onclick="ativarGatilho('mercado')">📍 Chegar no Mercado (17)</button>
-            <button id="btn-fox" class="btn btn-radio" onclick="ativarGatilho('fox')">📍 Chegar na Casa Fox (11)</button>
+            <!-- Passo A: Mapa de Longe -->
+            <div id="mapa-full-container" class="mapa-interativo">
+                <p class="instruction">Toque no mapa geral para focar na área de interferência.</p>
+                <img src="assets/mapa_paranapiacaba_antigo.jpg" class="img-full" onclick="ativarZoom()" alt="Mapa Geral">
+            </div>
+
+            <!-- Passo B: Mapa com Zoom e Fog -->
+            <div id="mapa-zoom-container" class="fog-container hidden">
+                <img src="assets/mapa_zoom.png" id="mapa-fundo" class="mapa-fundo" alt="Mapa Zoom">
+                <canvas id="fog-canvas" class="fog-canvas"></canvas>
+            </div>
+
+            <!-- Botões simulando o andar (Ocultos até dar o zoom) -->
+            <div id="controles-radar" class="radar-points hidden">
+                <button id="btn-pt1" class="btn btn-radio" onclick="ativarGatilho('fox')">📍 Caminhar para Setor Norte</button>
+                <button id="btn-pt2" class="btn btn-radio" onclick="ativarGatilho('lyra')">📍 Caminhar para Setor Leste</button>
+                <button id="btn-pt3" class="btn btn-radio" onclick="ativarGatilho('sul')">📍 Retornar pelo Setor Sul</button>
+            </div>
+        </div>
+
+        <!-- TELA 3: CADEADO E RESOLUÇÃO -->
+        <div id="tela-cadeado" class="screen hidden">
+            <h2>Ponto Cego Detectado</h2>
+            <div class="story-box">
+                <p><strong>A dedução é clara:</strong></p>
+                <p><em>"Todo o perímetro está limpo, mas a anomalia resiste no centro... no Castelinho. É lá que o segredo repousa."</em></p>
+            </div>
+            
+            <div class="padlock-box">
+                <p>Vá até a construção na colina. Qual o ano gravado em sua origem?</p>
+                <input type="number" id="senha-maleta" placeholder="Ex: 1900" maxlength="4" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);">
+                <button class="btn btn-unlock" onclick="verificarSenha()">Tentar Abrir 🔓</button>
+                <p id="erro-senha" class="error hidden">Senha incorreta. A maleta continua trancada.</p>
+            </div>
+        </div>
+
+        <!-- TELA 4: A RAMIFICAÇÃO (MODOS DE JOGO) -->
+        <div id="tela-escolha" class="screen hidden">
+            <h2>Maleta Aberta!</h2>
+            <p class="story-box">Dentro, você encontra 3 telegramas urgentes. A vila está sob múltiplos ataques. Escolha qual crise você vai resolver:</p>
+            <div class="cards-container">
+                <div class="card casual">
+                    <h3>A Trilha do Ouro</h3>
+                    <p class="card-desc">História real e exploração no seu tempo. Indicado para passeios e famílias.</p>
+                    <button class="btn-card">Acessar Dossiê</button>
+                </div>
+                <div class="card competitivo">
+                    <h3>Sombras da Névoa</h3>
+                    <p class="card-desc">Investigação obscura. Jogue em grupo e descubra quem é o sabotador.</p>
+                    <button class="btn-card">Acessar Dossiê</button>
+                </div>
+                <div class="card escape">
+                    <h3>Protocolo de Ferro</h3>
+                    <p class="card-desc">A megacorporação chegou. Puzzles complexos contra o tempo.</p>
+                    <button class="btn-card">Acessar Dossiê</button>
+                </div>
+            </div>
         </div>
 
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
