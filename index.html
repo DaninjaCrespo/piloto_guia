@@ -50,14 +50,18 @@
             <h2>Triangulação Concluída</h2>
             <p class="instruction">Analisando o seu percurso no mapa...</p>
             
-            <!-- O Mapa Desenhando a Seta -->
+<!-- O Mapa Desenhando a Seta -->
             <div class="map-container">
-                <svg viewBox="0 0 200 200" class="map-svg">
-                    <!-- Fundo simulando ruas (estático) -->
-                    <line x1="20" y1="50" x2="180" y2="50" stroke="#333" stroke-width="2"/>
-                    <line x1="100" y1="20" x2="100" y2="180" stroke="#333" stroke-width="2"/>
-                    <!-- A Linha Vermelha que será animada via CSS -->
-                    <path id="rota-caminhada" d="M 30 30 L 100 160 L 170 30" fill="transparent" stroke="#ff4444" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+                <!-- A imagem do mapa antigo como fundo -->
+                <img src="assets/mapa_paranapiacaba_antigo.jpg" class="map-bg" alt="Mapa Antigo de Paranapiacaba">
+                
+                <!-- O SVG transparente que fica por cima do mapa para desenhar a linha -->
+                <!-- O viewBox "0 0 500 350" imita a proporção retangular do seu mapa -->
+                <svg viewBox="0 0 500 350" class="map-svg">
+                    <!-- A Linha Vermelha que será animada. 
+                         Neste exemplo, ela desenha um caminho do "Clube Lira" até o "Antigo Mercado" 
+                         e vira formando uma seta apontando para o "Castelinho". -->
+                    <path id="rota-caminhada" d="M 330 100 L 330 200 L 250 180" fill="transparent" stroke="#ff4444" stroke-width="8" stroke-linejoin="round" stroke-linecap="round" />
                 </svg>
             </div>
 
