@@ -15,7 +15,7 @@
             <p class="subtitle">Ato Demo: A Maleta do Maquinista</p>
             <div class="story-box">
                 <p>O sinal da maleta está bloqueado por uma forte interferência na neblina.</p>
-                <p>O mapa está oculto. Caminhe pelos setores da vila e resolva os códigos locais para limpar a névoa e encontrar o ponto de origem.</p>
+                <p>O mapa está cego. Inicie a varredura a pé para dissipar a névoa e encontrar a origem da anomalia.</p>
             </div>
             <button class="btn" onclick="iniciarMissao()">Iniciar Varredura</button>
         </div>
@@ -23,64 +23,72 @@
         <!-- TELA 2: MAPA DE NÉVOA E MISSÕES -->
         <div id="tela-investigacao" class="screen hidden">
             <h2>Radar de Anomalias</h2>
-            
             <div class="oscilloscope"><div id="onda" class="wave chaotic"></div></div>
 
-            <!-- O MAPA COM A NÉVOA -->
+            <!-- MAPA E NÉVOA -->
             <div id="mapa-zoom-container" class="fog-container">
                 <img src="assets/mapa_zoom.png" id="mapa-fundo" class="mapa-fundo" alt="Mapa Zoom">
                 <canvas id="fog-canvas" class="fog-canvas"></canvas>
             </div>
 
+            <!-- PAINEL DE NARRATIVA E CHARADAS -->
             <div class="mission-panel">
-                <!-- MISSÃO 1: ÁREA LARANJA (NORTE) -->
-                <div id="missao-1" class="missao-box">
-                    <p class="instruction">Sinal inicial no Largo dos Padeiros. Caminhe em direção à Antiga Padaria/Casa Fox (Noroeste).</p>
-                    <button id="btn-chegou-1" class="btn btn-radio" onclick="chegouPonto(1)">📍 Cheguei no Setor Noroeste</button>
-                    
-                    <!-- Charada 1 oculta -->
-                    <div id="charada-1" class="charada-box hidden">
-                        <p><strong>Charada Local:</strong> O que alimenta o fogo das antigas máquinas que subiam a serra?</p>
-                        <input type="text" id="resp-1" placeholder="Digite a palavra...">
-                        <button class="btn btn-unlock" onclick="resolverCharada(1, 'carvao')">Limpar Névoa 🌫️</button>
-                        <p id="erro-1" class="error hidden">Incorreto. A névoa persiste.</p>
-                    </div>
+                
+                <!-- O texto guia que muda conforme o jogo avança -->
+                <p id="texto-narrativo" class="instruction">
+                    <strong>Ponto 1:</strong> Sinal inicial estabelecido no Largo dos Padeiros. Caminhe pela trilha noroeste.
+                </p>
+
+                <!-- Charada 1 (Casa Fox) -->
+                <div id="box-charada-1" class="charada-box hidden">
+                    <p><strong>[Ponto 3] Bloqueio Local:</strong> Insira a chave da Casa Fox para dissipar a névoa do setor.</p>
+                    <p style="color: #ffaa00; font-size: 0.8rem;">[DEBUG] Senha: teste1</p>
+                    <input type="text" id="resp-1" placeholder="Digite a palavra...">
+                    <button class="btn btn-unlock" onclick="resolverCharada(1, 'teste1')">Desbloquear Setor 🔓</button>
+                    <p id="erro-1" class="error hidden">Erro de decodificação.</p>
                 </div>
 
-                <!-- MISSÃO 2: ÁREA VERMELHA (LESTE) -->
-                <div id="missao-2" class="missao-box hidden">
-                    <p class="instruction">Névoa dissipada! Agora caminhe para a área do Clube Lyra (Leste).</p>
-                    <button id="btn-chegou-2" class="btn btn-radio" onclick="chegouPonto(2)">📍 Cheguei no Setor Leste</button>
-                    
-                    <!-- Charada 2 oculta -->
-                    <div id="charada-2" class="charada-box hidden">
-                        <p><strong>Charada Local:</strong> Como é chamada a neblina densa e famosa que cobre Paranapiacaba?</p>
-                        <input type="text" id="resp-2" placeholder="Digite a palavra...">
-                        <button class="btn btn-unlock" onclick="resolverCharada(2, 'fog')">Limpar Névoa 🌫️</button>
-                        <p id="erro-2" class="error hidden">Incorreto. A névoa persiste.</p>
-                    </div>
+                <!-- Charada 2 (Clube Lyra) -->
+                <div id="box-charada-2" class="charada-box hidden">
+                    <p><strong>[Ponto 5] Bloqueio Local:</strong> Frequência máxima no Clube Lyra. Insira o código da elite.</p>
+                    <p style="color: #ffaa00; font-size: 0.8rem;">[DEBUG] Senha: teste2</p>
+                    <input type="text" id="resp-2" placeholder="Digite a palavra...">
+                    <button class="btn btn-unlock" onclick="resolverCharada(2, 'teste2')">Desbloquear Setor 🔓</button>
+                    <p id="erro-2" class="error hidden">Erro de decodificação.</p>
                 </div>
 
-                <!-- CONCLUSÃO DA NÉVOA -->
-                <div id="missao-conclusao" class="missao-box hidden">
-                    <p class="morse-tip" style="color: #ff4444; font-size: 1rem;">ALERTA: O mapa foi limpo, mas a anomalia resiste no centro (Castelinho). Vá até lá!</p>
-                    <button class="btn btn-unlock" onclick="mudarTela('tela-investigacao', 'tela-cadeado')">Avançar para o Ponto Cego</button>
+                <!-- Botão para o Clímax -->
+                <div id="box-conclusao" class="hidden">
+                    <p class="morse-tip" style="color: #ff4444; font-size: 1rem;">ALERTA: Mapa limpo. Anomalia central isolada no Castelinho. Vá até lá!</p>
+                    <button class="btn btn-unlock" onclick="mudarTela('tela-investigacao', 'tela-cadeado')">Subir a Colina</button>
                 </div>
+
             </div>
         </div>
 
-        <!-- TELA 3: CADEADO FINAL -->
+        <!-- TELA 3: CADEADO FINAL (Castelinho) -->
         <div id="tela-cadeado" class="screen hidden">
             <h2>O Ponto Cego</h2>
             <div class="padlock-box">
-                <p>Você chegou ao Castelinho. Qual o ano gravado em sua origem?</p>
-                <input type="number" id="senha-maleta" placeholder="Ex: 1900" maxlength="4">
+                <p>Você chegou ao Castelinho. Insira o código de liberação da maleta.</p>
+                <p style="color: #ffaa00; font-size: 0.8rem;">[DEBUG] Senha: teste3</p>
+                <input type="text" id="senha-maleta" placeholder="Código...">
                 <button class="btn btn-unlock" onclick="abrirMaleta()">Tentar Abrir 🔓</button>
                 <p id="erro-senha" class="error hidden">Senha incorreta.</p>
             </div>
         </div>
 
     </div>
+
+    <!-- PAINEL FLUTUANTE DE DESENVOLVEDOR (DEBUG) -->
+    <div id="debug-menu" class="debug-panel hidden">
+        <p class="debug-title">⚙️ SPOOFER GPS (TESTES)</p>
+        <button id="btn-dbg-2" onclick="simularGPS(2)">🚶 Simular Ponto 2 (Auto)</button>
+        <button id="btn-dbg-3" onclick="simularGPS(3)" disabled>📍 Simular Ponto 3 (Fox)</button>
+        <button id="btn-dbg-4" onclick="simularGPS(4)" disabled>🚶 Simular Ponto 4 (Auto)</button>
+        <button id="btn-dbg-5" onclick="simularGPS(5)" disabled>📍 Simular Ponto 5 (Lyra)</button>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
