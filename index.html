@@ -9,23 +9,33 @@
 <body>
     <div class="container">
         
-        <!-- TELA 1: INTRODUÇÃO -->
+        <!-- TELA 1: INTRODUÇÃO E NARRATIVA -->
         <div id="tela-intro" class="screen active">
             <h1>Guia Detetive</h1>
             <p class="subtitle">Ato Demo: A Maleta do Maquinista</p>
-            <div class="story-box">
-                <p>O sinal da maleta está bloqueado por uma forte interferência na neblina.</p>
-                <p>O mapa está cego. Inicie a varredura a pé para dissipar a névoa e encontrar a origem da anomalia.</p>
+            
+            <div class="alert-box">
+                <p>🎧 <strong>AVISO DE IMERSÃO</strong></p>
+                <p>Para ouvir as interceptações de rádio, use fones de ouvido.</p>
             </div>
-            <button class="btn" onclick="iniciarMissao()">Iniciar Varredura</button>
+
+            <div class="story-box">
+                <p><em>"Diário de Investigação, Dia 1."</em></p>
+                <p>Encontrei a maleta abandonada próxima à passarela. Ela está trancada com um cadeado de quatro dígitos e emite um sinal de rádio contínuo, porém distorcido.</p>
+                <p>A neblina magnética desta vila está causando estática no meu equipamento. O mapa está cego. Preciso caminhar pelas ruas para calibrar o sinal, quebrar as criptografias locais e descobrir o epicentro dessa transmissão.</p>
+            </div>
+            <button class="btn" onclick="iniciarMissao()">Ligar Interceptor de Frequência</button>
         </div>
 
-        <!-- TELA 2: MAPA DE NÉVOA E MISSÕES -->
+        <!-- TELA 2: MAPA DE NÉVOA, RADAR E MISSÕES -->
         <div id="tela-investigacao" class="screen hidden">
-            <h2>Radar de Anomalias</h2>
+            <h2>Radar Ativo</h2>
+            
+            <!-- O Radar de Proximidade -->
             <div class="oscilloscope"><div id="onda" class="wave chaotic"></div></div>
+            <p id="status-sinal" class="morse-tip">Sinal: Caótico (Ruído Alto). Calibrando...</p>
 
-            <!-- MAPA E NÉVOA -->
+            <!-- O MAPA COM A NÉVOA -->
             <div id="mapa-zoom-container" class="fog-container">
                 <img src="assets/mapa_zoom.png" id="mapa-fundo" class="mapa-fundo" alt="Mapa Zoom">
                 <canvas id="fog-canvas" class="fog-canvas"></canvas>
@@ -34,32 +44,37 @@
             <!-- PAINEL DE NARRATIVA E CHARADAS -->
             <div class="mission-panel">
                 
-                <!-- O texto guia que muda conforme o jogo avança -->
                 <p id="texto-narrativo" class="instruction">
-                    <strong>Ponto 1:</strong> Sinal inicial estabelecido no Largo dos Padeiros. Caminhe pela trilha noroeste.
+                    <strong>📍 Ponto de Origem:</strong> O chiado é ensurdecedor aqui no Largo dos Padeiros. O radar indica uma anomalia ao Noroeste. Caminhe até a Antiga Padaria/Casa Fox para limpar a estática do setor.
                 </p>
 
                 <!-- Charada 1 (Casa Fox) -->
                 <div id="box-charada-1" class="charada-box hidden">
-                    <p><strong>[Ponto 3] Bloqueio Local:</strong> Insira a chave da Casa Fox para dissipar a névoa do setor.</p>
-                    <p style="color: #ffaa00; font-size: 0.8rem;">[DEBUG] Senha: teste1</p>
-                    <input type="text" id="resp-1" placeholder="Digite a palavra...">
-                    <button class="btn btn-unlock" onclick="resolverCharada(1, 'teste1')">Desbloquear Setor 🔓</button>
-                    <p id="erro-1" class="error hidden">Erro de decodificação.</p>
+                    <p><strong>⚠️ Interceptação de Áudio:</strong></p>
+                    <p><em>"...eles codificaram a passagem... só quem conhece a energia negra das máquinas pode abrir..."</em></p>
+                    <p>O setor está protegido por uma trava cognitiva. Insira a resposta para limpar a névoa.</p>
+                    <p class="debug-text">[DEBUG] Senha: teste1</p>
+                    <input type="text" id="resp-1" placeholder="A resposta é...">
+                    <button class="btn btn-unlock" onclick="resolverCharada(1, 'teste1')">Quebrar Criptografia 🔓</button>
+                    <p id="erro-1" class="error hidden">Acesso negado. A estática continua.</p>
                 </div>
 
                 <!-- Charada 2 (Clube Lyra) -->
                 <div id="box-charada-2" class="charada-box hidden">
-                    <p><strong>[Ponto 5] Bloqueio Local:</strong> Frequência máxima no Clube Lyra. Insira o código da elite.</p>
-                    <p style="color: #ffaa00; font-size: 0.8rem;">[DEBUG] Senha: teste2</p>
-                    <input type="text" id="resp-2" placeholder="Digite a palavra...">
-                    <button class="btn btn-unlock" onclick="resolverCharada(2, 'teste2')">Desbloquear Setor 🔓</button>
-                    <p id="erro-2" class="error hidden">Erro de decodificação.</p>
+                    <p><strong>⚠️ Interceptação de Áudio:</strong></p>
+                    <p><em>"...não confie nos cavalheiros do Lyra... eles dançam enquanto escondem o segredo da colina..."</em></p>
+                    <p>Frequência máxima detectada. Quebre o código da elite ferroviária para limpar o lado Leste.</p>
+                    <p class="debug-text">[DEBUG] Senha: teste2</p>
+                    <input type="text" id="resp-2" placeholder="A resposta é...">
+                    <button class="btn btn-unlock" onclick="resolverCharada(2, 'teste2')">Quebrar Criptografia 🔓</button>
+                    <p id="erro-2" class="error hidden">Acesso negado. A estática continua.</p>
                 </div>
 
-                <!-- Botão para o Clímax -->
+                <!-- Conclusão (O Ponto Cego) -->
                 <div id="box-conclusao" class="hidden">
-                    <p class="morse-tip" style="color: #ff4444; font-size: 1rem;">ALERTA: Mapa limpo. Anomalia central isolada no Castelinho. Vá até lá!</p>
+                    <p class="morse-tip" style="color: #ff4444; font-size: 0.95rem;">
+                        <strong>ALERTA MÁXIMO:</strong> O chiado sumiu. A varredura revelou a cidade inteira... mas olhe o mapa! O único lugar submerso nas sombras é o Castelinho. O sinal vem lá de dentro!
+                    </p>
                     <button class="btn btn-unlock" onclick="mudarTela('tela-investigacao', 'tela-cadeado')">Subir a Colina</button>
                 </div>
 
@@ -69,12 +84,15 @@
         <!-- TELA 3: CADEADO FINAL (Castelinho) -->
         <div id="tela-cadeado" class="screen hidden">
             <h2>O Ponto Cego</h2>
+            <div class="story-box">
+                <p>O ar está gelado. O aplicativo rastreou a origem exata do sinal: ele vem de dentro da sua maleta, e ecoa na fachada do Castelinho.</p>
+            </div>
             <div class="padlock-box">
-                <p>Você chegou ao Castelinho. Insira o código de liberação da maleta.</p>
-                <p style="color: #ffaa00; font-size: 0.8rem;">[DEBUG] Senha: teste3</p>
-                <input type="text" id="senha-maleta" placeholder="Código...">
+                <p>Encontre a raiz da vila. Qual o código final para abrir a maleta?</p>
+                <p class="debug-text">[DEBUG] Senha: teste3</p>
+                <input type="text" id="senha-maleta" placeholder="Código de 4 dígitos">
                 <button class="btn btn-unlock" onclick="abrirMaleta()">Tentar Abrir 🔓</button>
-                <p id="erro-senha" class="error hidden">Senha incorreta.</p>
+                <p id="erro-senha" class="error hidden">Cadeado travado. Senha incorreta.</p>
             </div>
         </div>
 
@@ -82,11 +100,16 @@
 
     <!-- PAINEL FLUTUANTE DE DESENVOLVEDOR (DEBUG) -->
     <div id="debug-menu" class="debug-panel hidden">
-        <p class="debug-title">⚙️ SPOOFER GPS (TESTES)</p>
-        <button id="btn-dbg-2" onclick="simularGPS(2)">🚶 Simular Ponto 2 (Auto)</button>
-        <button id="btn-dbg-3" onclick="simularGPS(3)" disabled>📍 Simular Ponto 3 (Fox)</button>
-        <button id="btn-dbg-4" onclick="simularGPS(4)" disabled>🚶 Simular Ponto 4 (Auto)</button>
-        <button id="btn-dbg-5" onclick="simularGPS(5)" disabled>📍 Simular Ponto 5 (Lyra)</button>
+        <div class="debug-header" onclick="toggleDebug()">
+            <span>⚙️ SPOOFER GPS</span>
+            <span id="debug-toggle-icon">[-]</span>
+        </div>
+        <div id="debug-content" class="debug-content">
+            <button id="btn-dbg-2" onclick="simularGPS(2)">🚶 Andar até Ponto 2</button>
+            <button id="btn-dbg-3" onclick="simularGPS(3)" disabled>📍 Chegar na Casa Fox</button>
+            <button id="btn-dbg-4" onclick="simularGPS(4)" disabled>🚶 Andar até Ponto 4</button>
+            <button id="btn-dbg-5" onclick="simularGPS(5)" disabled>📍 Chegar no Clube Lyra</button>
+        </div>
     </div>
 
     <script src="script.js"></script>
