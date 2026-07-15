@@ -50,21 +50,18 @@
             <h2>Triangulação Concluída</h2>
             <p class="instruction">Analisando o seu percurso no mapa...</p>
             
-<!-- O Mapa Desenhando a Seta -->
+            <!-- O Mapa Desenhando a Seta com a Imagem Antiga -->
             <div class="map-container">
                 <!-- A imagem do mapa antigo como fundo -->
                 <img src="assets/mapa_paranapiacaba_antigo.jpg" class="map-bg" alt="Mapa Antigo de Paranapiacaba">
                 
                 <!-- O SVG transparente que fica por cima do mapa para desenhar a linha -->
-                <!-- O viewBox "0 0 500 350" imita a proporção retangular do seu mapa -->
                 <svg viewBox="0 0 500 350" class="map-svg">
-                    <!-- A Linha Vermelha que será animada. 
-                         Neste exemplo, ela desenha um caminho do "Clube Lira" até o "Antigo Mercado" 
-                         e vira formando uma seta apontando para o "Castelinho". -->
                     <path id="rota-caminhada" d="M 330 100 L 330 200 L 250 180" fill="transparent" stroke="#ff4444" stroke-width="8" stroke-linejoin="round" stroke-linecap="round" />
                 </svg>
             </div>
 
+            <!-- Div que esconde a mensagem até o mapa terminar de desenhar -->
             <div id="mensagem-decodificada" class="hidden">
                 <div class="story-box">
                     <p><strong>Rádio Decodificado:</strong></p>
@@ -73,8 +70,11 @@
                 
                 <div class="padlock-box">
                     <p>Vá até a construção apontada. Qual o ano na placa de bronze?</p>
+                    <!-- Input de Senha -->
                     <input type="number" id="senha-maleta" placeholder="Ex: 1900" maxlength="4" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);">
+                    
                     <button class="btn btn-unlock" onclick="verificarSenha()">Tentar Abrir 🔓</button>
+                    
                     <p id="erro-senha" class="error hidden">Senha incorreta. A maleta continua trancada.</p>
                 </div>
             </div>
@@ -85,16 +85,19 @@
             <h2>Maleta Aberta!</h2>
             <p class="story-box">Dentro, você encontra 3 telegramas urgentes. A vila está sob múltiplos ataques. Escolha qual crise você vai resolver:</p>
             <div class="cards-container">
+                <!-- Modo Casual -->
                 <div class="card casual">
                     <h3>A Trilha do Ouro</h3>
                     <p class="card-desc">História real e exploração no seu tempo. Indicado para passeios e famílias.</p>
                     <button class="btn-card">Acessar Dossiê</button>
                 </div>
+                <!-- Modo Competitivo -->
                 <div class="card competitivo">
                     <h3>Sombras da Névoa</h3>
                     <p class="card-desc">Investigação obscura. Jogue em grupo e descubra quem é o sabotador.</p>
                     <button class="btn-card">Acessar Dossiê</button>
                 </div>
+                <!-- Modo Escape -->
                 <div class="card escape">
                     <h3>Protocolo de Ferro</h3>
                     <p class="card-desc">A megacorporação chegou. Puzzles complexos contra o tempo.</p>
@@ -104,6 +107,8 @@
         </div>
 
     </div>
+    
+    <!-- Chamada do arquivo JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
