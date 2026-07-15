@@ -1,90 +1,79 @@
-// --- UTILITÁRIOS ---
-function mudarTela(telaOcultar, telaMostrar) {
-    document.getElementById(telaOcultar).classList.add('hidden');
-    document.getElementById(telaMostrar).classList.remove('hidden');
-}
+// Aguarda a imagem do mapa carregar para pegar o tamanho exato dela na tela
+window.onload = function() {
+    inicializarNevoa();
+};
 
-// --- FLUXO DO JOGO ---
-function iniciarRadar() {
-    mudarTela('tela-intro', 'tela-radar');
-}
-
-// --- LÓGICA DE TRIANGULAÇÃO (RADAR) ---
+let canvas, ctx, mapaImg;
 let pontosEncontrados = 0;
 
-function capturarPonto(ponto) {
-    // 1. Desativa o botão clicado
-    const btn = document.getElementById('btn-pt' + ponto);
-    btn.disabled = true;
-    btn.innerHTML = `✅ Ponto ${ponto} Sintonizado`;
+function inicializarNevoa() {
+    canvas = document.getElementById('fog-canvas');
+    ctx = canvas.getContext('2d');
+    mapaImg = document.getElementById('mapa-fundo');
 
-    // 2. Toca o "Bipe" de Radar
-    tocarBipeRadar();
+    // Iguala o tamanho do canvas ao tamanho atual da imagem na tela do celular
+    canvas.width = mapaImg.clientWidth;
+    canvas.height = mapaImg.clientHeight;
 
-    // 3. Atualiza o status visual
+    // 1. Pinta a tela inteira com a Névoa (Cinza escuro com 95% de opacidade)
+    ctx.fillStyle = "rgba(20, 25, 25, 0.95)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Abre instantaneamente o Ponto Inicial (Largo dos Padeiros)
+    // O Largo dos Padeiros (7) está mais ou menos a 35% do X e 65% do Y na sua imagem
+    apagarNevoa(0.35, 0.65, 40); 
+}
+
+// A função da "Borracha"
+// pctX e pctY são porcentagens (0 a 1) de onde o buraco vai abrir baseado no tamanho do mapa
+function apagarNevoa(pctX, pctY, raio) {
+    const eixoX = canvas.width * pctX;
+    const eixoY = canvas.height * pctY;
+
+    // O segredo do Canvas: 'destination-out' transforma o pincel em borracha
+    ctx.globalCompositeOperation = 'destination-out';
+    
+    // Desenha um círculo com bordas suaves (Gradiente Radial)
+    const gradient = ctx.createRadialGradient(eixoX, eixoY, raio * 0.3, eixoX, eixoY, raio);
+    gradient.addColorStop(0, 'rgba(0,0,0,1)'); // Centro totalmente transparente
+    gradient.addColorStop(1, 'rgba(0,0,0,0)'); // Borda esfumaçada
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(eixoX, eixoY, raio, 0, Math.PI * 2, false);
+    ctx.fill();
+
+    // Volta o pincel ao normal
+    ctx.globalCompositeOperation = 'source-over';
+}
+
+// O Gatilho ativado quando o jogador chega no local (simulado pelos botões)
+function ativarGatilho(local) {
+    const statusText = document.getElementById('status-missao');
+    const botao = document.getElementById(`btn-${local}`);
+    
+    botao.disabled = true;
+    botao.innerText = "✅ Perímetro Limpo";
     pontosEncontrados++;
-    const statusText = document.getElementById('status-sinal');
-    const ondaVisual = document.getElementById('onda');
 
-    if(pontosEncontrados === 1) {
-        statusText.innerText = "Sinal: Fraco (33%)";
-        ondaVisual.style.height = "20px";
-    } else if (pontosEncontrados === 2) {
-        statusText.innerText = "Sinal: Moderado (66%)";
-        ondaVisual.style.height = "10px";
-    } else if (pontosEncontrados === 3) {
-        statusText.innerText = "Sinal: Perfeito (100%) - Analisando...";
-        ondaVisual.className = "wave stable"; // Transforma em linha reta!
-        
-        // Espera 2 segundos de suspense e muda para o Mapa
-        setTimeout(() => {
-            mudarTela('tela-radar', 'tela-mapa');
-            iniciarAnimacaoMapa();
-        }, 2000);
+    // Aqui mapeamos as posições aproximadas de cada local na SUA imagem image_6749c7.jpg
+    // O raio da borracha também está aqui (45 pixels)
+    if(local === 'lyra') {
+        apagarNevoa(0.55, 0.35, 45); // Coordenadas estimadas do Clube Lyra (15)
+        statusText.innerText = "Sinal Detectado: Clube Lyra. Continue.";
+    } 
+    else if(local === 'mercado') {
+        apagarNevoa(0.55, 0.52, 45); // Coordenadas estimadas do Mercado (17)
+        statusText.innerText = "Sinal Detectado: Antigo Mercado. Continue.";
+    } 
+    else if(local === 'fox') {
+        apagarNevoa(0.35, 0.25, 45); // Coordenadas estimadas da Casa Fox (11)
+        statusText.innerText = "Sinal Detectado: Casa Fox. Continue.";
     }
-}
 
-// Motor de Áudio Simples (Feedback de Sucesso)
-function tocarBipeRadar() {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    oscillator.type = 'sine';
-    oscillator.frequency.value = 1200; // Tom agudo de radar
-    
-    const gainNode = audioCtx.createGain();
-    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); // Efeito de fade out
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.5);
-}
-
-// --- ANIMAÇÃO DRAW-TO-REVEAL ---
-function iniciarAnimacaoMapa() {
-    // Pega a linha do SVG e aciona a animação CSS
-    const linhaRota = document.getElementById('rota-caminhada');
-    linhaRota.classList.add('animar-rota');
-
-    // Depois que a seta terminar de desenhar (3s), revela a mensagem
-    setTimeout(() => {
-        document.getElementById('mensagem-decodificada').classList.remove('hidden');
-    }, 3500);
-}
-
-// --- VALIDADOR DE SENHA ---
-function verificarSenha() {
-    const inputSenha = document.getElementById('senha-maleta').value;
-    const msgErro = document.getElementById('erro-senha');
-
-    // Senha = 1898 (Ano de fundação do Relógio/Vila)
-    if(inputSenha === "1898") {
-        msgErro.classList.add('hidden');
-        mudarTela('tela-mapa', 'tela-escolha');
-    } else {
-        msgErro.classList.remove('hidden');
-        document.getElementById('senha-maleta').value = ""; 
+    // Se achou os 3, revela o mistério final!
+    if(pontosEncontrados === 3) {
+        statusText.style.color = "#ff4444";
+        statusText.innerText = "ALERTA: O perímetro foi varrido, mas o centro (Castelinho) continua impenetrável. Encontre o ponto cego!";
     }
 }
