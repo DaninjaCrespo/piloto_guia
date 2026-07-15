@@ -1,79 +1,130 @@
-// Aguarda a imagem do mapa carregar para pegar o tamanho exato dela na tela
-window.onload = function() {
-    inicializarNevoa();
-};
+// --- GERENCIAMENTO DE TELAS ---
+function mudarTela(telaOcultar, telaMostrar) {
+    document.getElementById(telaOcultar).classList.add('hidden');
+    document.getElementById(telaMostrar).classList.remove('hidden');
+}
 
+function iniciarMissao() {
+    mudarTela('tela-intro', 'tela-investigacao');
+}
+
+// --- LÓGICA DO ZOOM E DA NÉVOA ---
 let canvas, ctx, mapaImg;
 let pontosEncontrados = 0;
+
+function ativarZoom() {
+    // Esconde o mapa Full e mostra o mapa Zoom + Botões
+    document.getElementById('mapa-full-container').classList.add('hidden');
+    document.getElementById('mapa-zoom-container').classList.remove('hidden');
+    document.getElementById('controles-radar').classList.remove('hidden');
+    
+    document.getElementById('status-missao').innerText = "Sinal: Ponto Inicial (Largo dos Padeiros). Caminhe.";
+    
+    inicializarNevoa();
+}
 
 function inicializarNevoa() {
     canvas = document.getElementById('fog-canvas');
     ctx = canvas.getContext('2d');
     mapaImg = document.getElementById('mapa-fundo');
 
-    // Iguala o tamanho do canvas ao tamanho atual da imagem na tela do celular
+    // Sincroniza o tamanho do canvas
     canvas.width = mapaImg.clientWidth;
     canvas.height = mapaImg.clientHeight;
 
-    // 1. Pinta a tela inteira com a Névoa (Cinza escuro com 95% de opacidade)
-    ctx.fillStyle = "rgba(20, 25, 25, 0.95)";
+    // Pinta a tela inteira com Névoa Escura
+    ctx.fillStyle = "rgba(15, 20, 20, 0.95)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 2. Abre instantaneamente o Ponto Inicial (Largo dos Padeiros)
-    // O Largo dos Padeiros (7) está mais ou menos a 35% do X e 65% do Y na sua imagem
-    apagarNevoa(0.35, 0.65, 40); 
+    // Abre um buraco GIGANTE no canto inferior esquerdo (onde o jogador está)
+    // O raio gigante (canvas.width * 0.6) limpa quase metade inferior do mapa!
+    apagarNevoa(0.1, 0.9, canvas.width * 0.6); 
 }
 
-// A função da "Borracha"
-// pctX e pctY são porcentagens (0 a 1) de onde o buraco vai abrir baseado no tamanho do mapa
 function apagarNevoa(pctX, pctY, raio) {
     const eixoX = canvas.width * pctX;
     const eixoY = canvas.height * pctY;
 
-    // O segredo do Canvas: 'destination-out' transforma o pincel em borracha
     ctx.globalCompositeOperation = 'destination-out';
-    
-    // Desenha um círculo com bordas suaves (Gradiente Radial)
-    const gradient = ctx.createRadialGradient(eixoX, eixoY, raio * 0.3, eixoX, eixoY, raio);
-    gradient.addColorStop(0, 'rgba(0,0,0,1)'); // Centro totalmente transparente
-    gradient.addColorStop(1, 'rgba(0,0,0,0)'); // Borda esfumaçada
+    const gradient = ctx.createRadialGradient(eixoX, eixoY, raio * 0.1, eixoX, eixoY, raio);
+    gradient.addColorStop(0, 'rgba(0,0,0,1)'); 
+    gradient.addColorStop(1, 'rgba(0,0,0,0)'); 
 
     ctx.fillStyle = gradient;
     ctx.beginPath();
     ctx.arc(eixoX, eixoY, raio, 0, Math.PI * 2, false);
     ctx.fill();
-
-    // Volta o pincel ao normal
     ctx.globalCompositeOperation = 'source-over';
 }
 
-// O Gatilho ativado quando o jogador chega no local (simulado pelos botões)
-function ativarGatilho(local) {
+// --- GATILHOS DO GPS E OSCILOSCÓPIO ---
+function ativarGatilho(setor) {
     const statusText = document.getElementById('status-missao');
-    const botao = document.getElementById(`btn-${local}`);
+    const ondaVisual = document.getElementById('onda');
     
-    botao.disabled = true;
-    botao.innerText = "✅ Perímetro Limpo";
+    tocarBipeRadar(); // Efeito sonoro do radar
     pontosEncontrados++;
 
-    // Aqui mapeamos as posições aproximadas de cada local na SUA imagem image_6749c7.jpg
-    // O raio da borracha também está aqui (45 pixels)
-    if(local === 'lyra') {
-        apagarNevoa(0.55, 0.35, 45); // Coordenadas estimadas do Clube Lyra (15)
-        statusText.innerText = "Sinal Detectado: Clube Lyra. Continue.";
+    if(setor === 'fox') {
+        document.getElementById('btn-pt1').disabled = true;
+        document.getElementById('btn-pt1').innerText = "✅ Setor Norte Limpo";
+        // Apaga um quadrante gigante no topo esquerdo do mapa
+        apagarNevoa(0.2, 0.1, canvas.width * 0.6); 
+        statusText.innerText = "Sinal: Moderado (33%) - Interferência caindo.";
     } 
-    else if(local === 'mercado') {
-        apagarNevoa(0.55, 0.52, 45); // Coordenadas estimadas do Mercado (17)
-        statusText.innerText = "Sinal Detectado: Antigo Mercado. Continue.";
-    } 
-    else if(local === 'fox') {
-        apagarNevoa(0.35, 0.25, 45); // Coordenadas estimadas da Casa Fox (11)
-        statusText.innerText = "Sinal Detectado: Casa Fox. Continue.";
+    else if(setor === 'lyra') {
+        document.getElementById('btn-pt2').disabled = true;
+        document.getElementById('btn-pt2').innerText = "✅ Setor Leste Limpo";
+        // Apaga um quadrante gigante no lado direito
+        apagarNevoa(0.9, 0.3, canvas.width * 0.7); 
+        statusText.innerText = "Sinal: Forte (66%) - Frequência estabilizando.";
+    }
+    else if(setor === 'sul') {
+        document.getElementById('btn-pt3').disabled = true;
+        document.getElementById('btn-pt3').innerText = "✅ Setor Sul Limpo";
+        // Apaga a base do mapa
+        apagarNevoa(0.8, 0.9, canvas.width * 0.6); 
     }
 
-    // Se achou os 3, revela o mistério final!
+    // CLÍMAX: Todos os pontos foram encontrados
     if(pontosEncontrados === 3) {
         statusText.style.color = "#ff4444";
-        statusText.innerText = "ALERTA: O perímetro foi varrido, mas o centro (Castelinho) continua impenetrável. Encontre o ponto cego!";
+        statusText.innerText = "ALERTA: Ponto Cego detectado no centro do mapa!";
+        ondaVisual.className = "wave stable"; // Transforma a onda em linha reta!
+        
+        // Espera 3 segundos para o jogador admirar o mapa limpo e a nuvem no centro
+        setTimeout(() => {
+            mudarTela('tela-investigacao', 'tela-cadeado');
+        }, 3500);
+    }
+}
+
+// Motor de Áudio do Radar
+function tocarBipeRadar() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    oscillator.type = 'sine';
+    oscillator.frequency.value = 900;
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.4);
+}
+
+// --- VALIDADOR DE SENHA ---
+function verificarSenha() {
+    const inputSenha = document.getElementById('senha-maleta').value;
+    const msgErro = document.getElementById('erro-senha');
+
+    // Senha Exemplo (Ano de fundação)
+    if(inputSenha === "1898") {
+        msgErro.classList.add('hidden');
+        mudarTela('tela-cadeado', 'tela-escolha');
+    } else {
+        msgErro.classList.remove('hidden');
+        document.getElementById('senha-maleta').value = ""; 
     }
 }
