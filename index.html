@@ -9,89 +9,74 @@
 <body>
     <div class="container">
         
-        <!-- TELA 1: O GANCHO E AVISO DE IMERSÃO -->
+        <!-- TELA 1: INTRODUÇÃO -->
         <div id="tela-intro" class="screen active">
             <h1>Guia Detetive</h1>
             <p class="subtitle">Ato Demo: A Maleta do Maquinista</p>
-            
-            <div class="alert-box">
-                <p>🎧 <strong>AVISO DE IMERSÃO</strong></p>
-                <p>Para máxima experiência na névoa, use fones de ouvido. O Modo Visual (Dossiê) também está ativado por padrão.</p>
-            </div>
-
             <div class="story-box">
-                <p>Você encontrou uma maleta antiga trancada. Há um rádio acoplado nela emitindo estática pesada.</p>
-                <p>O sinal está criptografado. Precisamos triangular a frequência caminhando pelo perímetro para limpar a interferência e achar a chave.</p>
+                <p>O sinal da maleta está bloqueado por uma forte interferência na neblina.</p>
+                <p>O mapa está oculto. Caminhe pelos setores da vila e resolva os códigos locais para limpar a névoa e encontrar o ponto de origem.</p>
             </div>
-            <button class="btn" onclick="iniciarMissao()">Ligar Sistema</button>
+            <button class="btn" onclick="iniciarMissao()">Iniciar Varredura</button>
         </div>
 
-        <!-- TELA 2: RADAR, OSCILOSCÓPIO E MAPAS -->
+        <!-- TELA 2: MAPA DE NÉVOA E MISSÕES -->
         <div id="tela-investigacao" class="screen hidden">
-            <h2>Rastreador de Frequência</h2>
+            <h2>Radar de Anomalias</h2>
             
-            <!-- Osciloscópio Visual -->
-            <div class="oscilloscope">
-                <div id="onda" class="wave chaotic"></div>
-            </div>
-            <p id="status-missao" class="morse-tip">Sinal: Caótico (0%) - Analise o Mapa</p>
+            <div class="oscilloscope"><div id="onda" class="wave chaotic"></div></div>
 
-            <!-- Passo A: Mapa de Longe -->
-            <div id="mapa-full-container" class="mapa-interativo">
-                <p class="instruction">Toque no mapa geral para focar na área de interferência.</p>
-                <img src="assets/mapa_paranapiacaba_antigo.jpg" class="img-full" onclick="ativarZoom()" alt="Mapa Geral">
-            </div>
-
-            <!-- Passo B: Mapa com Zoom e Fog -->
-            <div id="mapa-zoom-container" class="fog-container hidden">
+            <!-- O MAPA COM A NÉVOA -->
+            <div id="mapa-zoom-container" class="fog-container">
                 <img src="assets/mapa_zoom.png" id="mapa-fundo" class="mapa-fundo" alt="Mapa Zoom">
                 <canvas id="fog-canvas" class="fog-canvas"></canvas>
             </div>
 
-            <!-- Botões simulando o andar (Ocultos até dar o zoom) -->
-            <div id="controles-radar" class="radar-points hidden">
-                <button id="btn-pt1" class="btn btn-radio" onclick="ativarGatilho('fox')">📍 Caminhar para Setor Norte</button>
-                <button id="btn-pt2" class="btn btn-radio" onclick="ativarGatilho('lyra')">📍 Caminhar para Setor Leste</button>
-                <button id="btn-pt3" class="btn btn-radio" onclick="ativarGatilho('sul')">📍 Retornar pelo Setor Sul</button>
+            <div class="mission-panel">
+                <!-- MISSÃO 1: ÁREA LARANJA (NORTE) -->
+                <div id="missao-1" class="missao-box">
+                    <p class="instruction">Sinal inicial no Largo dos Padeiros. Caminhe em direção à Antiga Padaria/Casa Fox (Noroeste).</p>
+                    <button id="btn-chegou-1" class="btn btn-radio" onclick="chegouPonto(1)">📍 Cheguei no Setor Noroeste</button>
+                    
+                    <!-- Charada 1 oculta -->
+                    <div id="charada-1" class="charada-box hidden">
+                        <p><strong>Charada Local:</strong> O que alimenta o fogo das antigas máquinas que subiam a serra?</p>
+                        <input type="text" id="resp-1" placeholder="Digite a palavra...">
+                        <button class="btn btn-unlock" onclick="resolverCharada(1, 'carvao')">Limpar Névoa 🌫️</button>
+                        <p id="erro-1" class="error hidden">Incorreto. A névoa persiste.</p>
+                    </div>
+                </div>
+
+                <!-- MISSÃO 2: ÁREA VERMELHA (LESTE) -->
+                <div id="missao-2" class="missao-box hidden">
+                    <p class="instruction">Névoa dissipada! Agora caminhe para a área do Clube Lyra (Leste).</p>
+                    <button id="btn-chegou-2" class="btn btn-radio" onclick="chegouPonto(2)">📍 Cheguei no Setor Leste</button>
+                    
+                    <!-- Charada 2 oculta -->
+                    <div id="charada-2" class="charada-box hidden">
+                        <p><strong>Charada Local:</strong> Como é chamada a neblina densa e famosa que cobre Paranapiacaba?</p>
+                        <input type="text" id="resp-2" placeholder="Digite a palavra...">
+                        <button class="btn btn-unlock" onclick="resolverCharada(2, 'fog')">Limpar Névoa 🌫️</button>
+                        <p id="erro-2" class="error hidden">Incorreto. A névoa persiste.</p>
+                    </div>
+                </div>
+
+                <!-- CONCLUSÃO DA NÉVOA -->
+                <div id="missao-conclusao" class="missao-box hidden">
+                    <p class="morse-tip" style="color: #ff4444; font-size: 1rem;">ALERTA: O mapa foi limpo, mas a anomalia resiste no centro (Castelinho). Vá até lá!</p>
+                    <button class="btn btn-unlock" onclick="mudarTela('tela-investigacao', 'tela-cadeado')">Avançar para o Ponto Cego</button>
+                </div>
             </div>
         </div>
 
-        <!-- TELA 3: CADEADO E RESOLUÇÃO -->
+        <!-- TELA 3: CADEADO FINAL -->
         <div id="tela-cadeado" class="screen hidden">
-            <h2>Ponto Cego Detectado</h2>
-            <div class="story-box">
-                <p><strong>A dedução é clara:</strong></p>
-                <p><em>"Todo o perímetro está limpo, mas a anomalia resiste no centro... no Castelinho. É lá que o segredo repousa."</em></p>
-            </div>
-            
+            <h2>O Ponto Cego</h2>
             <div class="padlock-box">
-                <p>Vá até a construção na colina. Qual o ano gravado em sua origem?</p>
-                <input type="number" id="senha-maleta" placeholder="Ex: 1900" maxlength="4" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);">
-                <button class="btn btn-unlock" onclick="verificarSenha()">Tentar Abrir 🔓</button>
-                <p id="erro-senha" class="error hidden">Senha incorreta. A maleta continua trancada.</p>
-            </div>
-        </div>
-
-        <!-- TELA 4: A RAMIFICAÇÃO (MODOS DE JOGO) -->
-        <div id="tela-escolha" class="screen hidden">
-            <h2>Maleta Aberta!</h2>
-            <p class="story-box">Dentro, você encontra 3 telegramas urgentes. A vila está sob múltiplos ataques. Escolha qual crise você vai resolver:</p>
-            <div class="cards-container">
-                <div class="card casual">
-                    <h3>A Trilha do Ouro</h3>
-                    <p class="card-desc">História real e exploração no seu tempo. Indicado para passeios e famílias.</p>
-                    <button class="btn-card">Acessar Dossiê</button>
-                </div>
-                <div class="card competitivo">
-                    <h3>Sombras da Névoa</h3>
-                    <p class="card-desc">Investigação obscura. Jogue em grupo e descubra quem é o sabotador.</p>
-                    <button class="btn-card">Acessar Dossiê</button>
-                </div>
-                <div class="card escape">
-                    <h3>Protocolo de Ferro</h3>
-                    <p class="card-desc">A megacorporação chegou. Puzzles complexos contra o tempo.</p>
-                    <button class="btn-card">Acessar Dossiê</button>
-                </div>
+                <p>Você chegou ao Castelinho. Qual o ano gravado em sua origem?</p>
+                <input type="number" id="senha-maleta" placeholder="Ex: 1900" maxlength="4">
+                <button class="btn btn-unlock" onclick="abrirMaleta()">Tentar Abrir 🔓</button>
+                <p id="erro-senha" class="error hidden">Senha incorreta.</p>
             </div>
         </div>
 
