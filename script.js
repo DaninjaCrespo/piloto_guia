@@ -1,11 +1,77 @@
-// --- GERENCIADOR DE TELAS ---
+// --- UTILITÁRIOS ---
 function mudarTela(telaOcultar, telaMostrar) {
     document.getElementById(telaOcultar).classList.add('hidden');
     document.getElementById(telaMostrar).classList.remove('hidden');
 }
 
-function iniciarDemo() {
-    mudarTela('tela-intro', 'tela-enigma');
+// --- FLUXO DO JOGO ---
+function iniciarRadar() {
+    mudarTela('tela-intro', 'tela-radar');
+}
+
+// --- LÓGICA DE TRIANGULAÇÃO (RADAR) ---
+let pontosEncontrados = 0;
+
+function capturarPonto(ponto) {
+    // 1. Desativa o botão clicado
+    const btn = document.getElementById('btn-pt' + ponto);
+    btn.disabled = true;
+    btn.innerHTML = `✅ Ponto ${ponto} Sintonizado`;
+
+    // 2. Toca o "Bipe" de Radar
+    tocarBipeRadar();
+
+    // 3. Atualiza o status visual
+    pontosEncontrados++;
+    const statusText = document.getElementById('status-sinal');
+    const ondaVisual = document.getElementById('onda');
+
+    if(pontosEncontrados === 1) {
+        statusText.innerText = "Sinal: Fraco (33%)";
+        ondaVisual.style.height = "20px";
+    } else if (pontosEncontrados === 2) {
+        statusText.innerText = "Sinal: Moderado (66%)";
+        ondaVisual.style.height = "10px";
+    } else if (pontosEncontrados === 3) {
+        statusText.innerText = "Sinal: Perfeito (100%) - Analisando...";
+        ondaVisual.className = "wave stable"; // Transforma em linha reta!
+        
+        // Espera 2 segundos de suspense e muda para o Mapa
+        setTimeout(() => {
+            mudarTela('tela-radar', 'tela-mapa');
+            iniciarAnimacaoMapa();
+        }, 2000);
+    }
+}
+
+// Motor de Áudio Simples (Feedback de Sucesso)
+function tocarBipeRadar() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    oscillator.type = 'sine';
+    oscillator.frequency.value = 1200; // Tom agudo de radar
+    
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); // Efeito de fade out
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.5);
+}
+
+// --- ANIMAÇÃO DRAW-TO-REVEAL ---
+function iniciarAnimacaoMapa() {
+    // Pega a linha do SVG e aciona a animação CSS
+    const linhaRota = document.getElementById('rota-caminhada');
+    linhaRota.classList.add('animar-rota');
+
+    // Depois que a seta terminar de desenhar (3s), revela a mensagem
+    setTimeout(() => {
+        document.getElementById('mensagem-decodificada').classList.remove('hidden');
+    }, 3500);
 }
 
 // --- VALIDADOR DE SENHA ---
@@ -13,68 +79,12 @@ function verificarSenha() {
     const inputSenha = document.getElementById('senha-maleta').value;
     const msgErro = document.getElementById('erro-senha');
 
-    // Supondo que a senha real do Sino seja o ano 1898
-    const SENHA_CORRETA = "1898"; 
-
-    if(inputSenha === SENHA_CORRETA) {
+    // Senha = 1898 (Ano de fundação do Relógio/Vila)
+    if(inputSenha === "1898") {
         msgErro.classList.add('hidden');
-        mudarTela('tela-enigma', 'tela-escolha'); // Ramifica para os 3 modos!
+        mudarTela('tela-mapa', 'tela-escolha');
     } else {
         msgErro.classList.remove('hidden');
-        // Limpa o input após erro
         document.getElementById('senha-maleta').value = ""; 
     }
-}
-
-// --- MOTOR DE CÓDIGO MORSE (SOM E LUZ) ---
-// Palavra: S I N O (... .. -. ---)
-const sinalMorse = [
-    1, 1, 1, 0,    // S (...)
-    1, 1, 0,       // I (..)
-    3, 1, 0,       // N (-.)
-    3, 3, 3        // O (---)
-];
-
-let tocando = false;
-
-function tocarMorse() {
-    if(tocando) return; // Evita tocar várias vezes seguidas
-    tocando = true;
-
-    // Criador de Áudio nativo do navegador
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const flash = document.getElementById('flash-overlay');
-    
-    let tempoAtual = audioCtx.currentTime;
-    const tempoPonto = 0.2; // Velocidade do bip (200ms)
-
-    sinalMorse.forEach(tipo => {
-        if (tipo > 0) {
-            // Cria o som (Oscilador)
-            const oscillator = audioCtx.createOscillator();
-            oscillator.type = 'sine'; // Tipo de som limpo (onda senoidal)
-            oscillator.frequency.value = 800; // Tom do bip (800hz)
-            
-            const gainNode = audioCtx.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            const duracao = tipo * tempoPonto;
-            
-            // Toca o Som
-            oscillator.start(tempoAtual);
-            oscillator.stop(tempoAtual + duracao);
-            
-            // Pisca a tela em sincronia
-            setTimeout(() => { flash.style.opacity = "0.8"; }, tempoAtual * 1000);
-            setTimeout(() => { flash.style.opacity = "0"; }, (tempoAtual + duracao) * 1000);
-
-            tempoAtual += duracao + tempoPonto; // Espaço entre bips
-        } else {
-            tempoAtual += tempoPonto * 3; // Espaço maior entre letras
-        }
-    });
-
-    // Libera o botão após terminar
-    setTimeout(() => { tocando = false; }, tempoAtual * 1000);
 }
