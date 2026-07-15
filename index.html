@@ -3,98 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guia Detetive - Paranapiacaba</title>
-    <style>
-        /* Estética "Noir Victorian" - Custo Zero de Design */
-        body {
-            background-color: #121212;
-            color: #d4af37; /* Dourado envelhecido */
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-            text-align: center;
-            background-image: radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%);
-        }
-
-        .container {
-            max-width: 400px;
-            border: 2px solid #3a3010;
-            padding: 30px;
-            background-color: #171717;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            border-radius: 8px;
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border-bottom: 1px solid #3a3010;
-            padding-bottom: 15px;
-        }
-
-        p {
-            color: #b0b0b0;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        .btn {
-            background-color: #3a3010;
-            color: #d4af37;
-            border: 1px solid #d4af37;
-            padding: 15px 30px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
-            width: 100%;
-            box-sizing: border-box;
-            border-radius: 4px;
-        }
-
-        .btn:hover {
-            background-color: #d4af37;
-            color: #121212;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
-        }
-
-        .footer {
-            margin-top: 20px;
-            font-size: 0.75rem;
-            color: #555;
-        }
-    </style>
+    <title>Guia Detetive | Ato Demo</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Efeito de flash na tela para o Morse -->
+    <div id="flash-overlay"></div>
 
     <div class="container">
-        <h1>Guia Detetive</h1>
-        <p>A névoa encobre segredos antigos nos trilhos de Paranapiacaba. Você está prestes a iniciar uma investigação que mudará o destino desta vila.</p>
         
-        <!-- Botão que inicia a nossa jornada -->
-        <button class="btn" onclick="iniciarInvestigacao()">Iniciar Investigação</button>
-        
-        <div class="footer">SISTEMA DE INVESTIGAÇÃO AUTOMATO v1.0</div>
+        <!-- TELA 1: O GANCHO INICIAL -->
+        <div id="tela-intro" class="screen active">
+            <h1>Guia Detetive</h1>
+            <p class="subtitle">Paranapiacaba - Ato Demo</p>
+            <div class="story-box">
+                <p>Uma maleta de couro foi encontrada abandonada perto da passarela. A polícia local não conseguiu abri-la.</p>
+                <p>O dono não deixou a chave, mas um rádio amador na maleta está captando uma frequência estranha.</p>
+            </div>
+            <button class="btn" onclick="iniciarDemo()">Assumir o Caso</button>
+        </div>
+
+        <!-- TELA 2: O ENIGMA MORSE E O CADEADO -->
+        <div id="tela-enigma" class="screen hidden">
+            <h2>A Maleta Trancada</h2>
+            <p class="instruction">O rádio emite um sinal em Código Morse. Ele indica o local do esconderijo da senha na vila.</p>
+            
+            <button class="btn btn-radio" onclick="tocarMorse()">📻 Interceptar Frequência</button>
+            <p class="morse-tip">Dica: S . . . | I . . | N - . | O - - -</p>
+
+            <div class="padlock-box">
+                <p>Vá até o local revelado. Qual o ano cravado no bronze?</p>
+                <input type="number" id="senha-maleta" placeholder="Ex: 1900" maxlength="4" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);">
+                <button class="btn btn-unlock" onclick="verificarSenha()">Tentar Abrir 🔓</button>
+                <p id="erro-senha" class="error hidden">Senha incorreta. A maleta continua trancada.</p>
+            </div>
+        </div>
+
+        <!-- TELA 3: A RAMIFICAÇÃO (ESCOLHA DE MODOS) -->
+        <div id="tela-escolha" class="screen hidden">
+            <h2>Maleta Aberta!</h2>
+            <p class="story-box">Dentro, você encontra 3 telegramas urgentes. A vila está sob múltiplos ataques. Escolha qual crise você vai resolver:</p>
+            
+            <div class="cards-container">
+                <!-- Modo Casual -->
+                <div class="card casual">
+                    <h3>A Trilha do Ouro</h3>
+                    <p class="card-desc">História real e exploração no seu tempo. Indicado para passeios e famílias.</p>
+                    <span class="badge">Nível: Fácil | Tempo: Livre</span>
+                    <button class="btn-card">Acessar Dossiê</button>
+                </div>
+
+                <!-- Modo Competitivo -->
+                <div class="card competitivo">
+                    <h3>Sombras da Névoa</h3>
+                    <p class="card-desc">Investigação obscura. Jogue em grupo e descubra quem é o sabotador.</p>
+                    <span class="badge">Nível: Médio | Tempo: Livre</span>
+                    <button class="btn-card">Acessar Dossiê</button>
+                </div>
+
+                <!-- Modo Escape -->
+                <div class="card escape">
+                    <h3>Protocolo de Ferro</h3>
+                    <p class="card-desc">A megacorporação chegou. Puzzles complexos contra o relógio para salvar a vila.</p>
+                    <span class="badge">Nível: Difícil | Tempo: 60 Minutos</span>
+                    <button class="btn-card">Acessar Dossiê</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <script>
-        // Lógica inicial do nosso jogo de duas pessoas
-        function iniciarInvestigacao() {
-            alert("A névoa se aproxima... Iniciando o Ato Demo: O Prólogo!");
-            // Aqui nas próximas etapas nós vamos fazer a tela mudar para a primeira pista!
-        }
-    </script>
-
+    <script src="script.js"></script>
 </body>
 </html>
