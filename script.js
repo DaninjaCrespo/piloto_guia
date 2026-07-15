@@ -1,130 +1,50 @@
-// --- GERENCIAMENTO GERAL ---
-function mudarTela(telaOcultar, telaMostrar) {
-    document.getElementById(telaOcultar).classList.add('hidden');
-    document.getElementById(telaMostrar).classList.remove('hidden');
-}
+/* RESET E CORES GERAIS */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background-color: #0d0d0d; background-image: radial-gradient(circle at center, #1a1a24 0%, #0d0d0d 100%); color: #e0e0e0; font-family: 'Courier New', Courier, monospace; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; }
+.container { background-color: rgba(15, 15, 15, 0.9); border: 1px solid #333; border-top: 3px solid #8c7322; padding: 20px; width: 100%; max-width: 450px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); text-align: center; margin-bottom: 50px; }
 
-function iniciarMissao() {
-    mudarTela('tela-intro', 'tela-investigacao');
-    document.getElementById('debug-menu').classList.remove('hidden'); // Revela o painel de testes
-    setTimeout(inicializarNevoa, 300);
-}
+/* TEXTOS E NARRATIVA */
+h1, h2 { color: #d4af37; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; font-size: 1.2rem;}
+.subtitle { color: #888; margin-bottom: 20px; font-size: 0.85rem; }
+.alert-box { background: #001a2a; border-left: 3px solid #00bfff; padding: 12px; margin-bottom: 15px; font-size: 0.8rem; text-align: left; color: #b3e0ff;}
+.story-box { background: #1a1a1a; padding: 15px; border-left: 3px solid #d4af37; margin-bottom: 20px; font-size: 0.9rem; line-height: 1.6; color: #ccc; text-align: left; }
+.instruction { background: #111; padding: 15px; border: 1px solid #333; border-radius: 4px; font-size: 0.9rem; color: #bbb; text-align: left; margin-bottom: 15px; line-height: 1.5; border-left: 3px solid #555;}
+.debug-text { color: #ffaa00; font-size: 0.8rem; margin-bottom: 5px; font-weight: bold;}
 
-// --- LÓGICA DA NÉVOA ORGÂNICA ---
-let canvas, ctx, mapaImg;
+/* BOTÕES E INPUTS */
+.btn { background: #222; color: #d4af37; border: 1px solid #d4af37; padding: 12px; width: 100%; font-family: inherit; font-size: 0.95rem; font-weight: bold; text-transform: uppercase; cursor: pointer; border-radius: 4px; transition: 0.3s; margin-bottom: 10px;}
+.btn:hover { background: #d4af37; color: #111; }
+.btn-unlock { background: #1a331a; color: #00ff00; border-color: #00ff00; margin-top: 10px;}
+.btn-unlock:hover { background: #00ff00; color: #000; }
+input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; text-align: center; background: #000; color: #fff; border: 2px solid #333; border-radius: 4px; font-family: inherit; text-transform: uppercase; margin-top: 5px;}
 
-function inicializarNevoa() {
-    canvas = document.getElementById('fog-canvas');
-    ctx = canvas.getContext('2d');
-    mapaImg = document.getElementById('mapa-fundo');
+/* MAPA, NÉVOA E RADAR */
+.fog-container { position: relative; width: 100%; border: 2px solid #333; border-radius: 6px; overflow: hidden; background-color: #000; margin-bottom: 15px;}
+.mapa-fundo { display: block; width: 100%; height: auto; filter: sepia(0.2) contrast(1.1); }
+.fog-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; transition: opacity 1s ease; }
 
-    canvas.width = mapaImg.clientWidth;
-    canvas.height = mapaImg.clientHeight;
+.oscilloscope { background: #051a05; border: 1px solid #00ff00; height: 35px; border-radius: 4px; position: relative; margin-bottom: 8px; display: flex; align-items: center;}
+.wave { width: 100%; position: absolute; box-shadow: 0 0 8px #00ff00; transition: 0.3s;}
+.wave.chaotic { height: 18px; border-top: 1px dashed #00ff00; border-bottom: 1px dashed #00ff00; animation: shake 0.1s infinite; opacity: 0.6; background: transparent;}
+.wave.moderate { height: 8px; border-top: 1px solid #00ff00; border-bottom: 1px solid #00ff00; animation: shake 0.4s infinite; opacity: 0.8; background: transparent;}
+.wave.stable { height: 2px; background: #00ff00; animation: none; opacity: 1; border: none;}
+@keyframes shake { 0% { transform: translateY(0); } 50% { transform: translateY(2px); } 100% { transform: translateY(-2px); } }
 
-    // Fundo Cinza
-    ctx.fillStyle = "rgba(40, 45, 45, 0.96)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+.morse-tip { font-size: 0.85rem; color: #00ff00; margin-bottom: 15px; font-weight: bold;}
+.charada-box { background: #1a1a1a; padding: 15px; border-left: 3px solid #00ff00; text-align: left; border-radius: 4px; margin-bottom: 15px;}
+.charada-box p { font-size: 0.85rem; color: #ddd; margin-bottom: 10px; line-height: 1.5;}
+.error { color: #ff4444; font-size: 0.85rem; margin-top: 10px; text-align: center; }
+.padlock-box { background: #111; padding: 20px; border: 1px dashed #444; border-radius: 6px; }
+.hidden { display: none !important; }
+.active { display: block; }
 
-    // Ponto 1: Largo dos Padeiros (Automático no início)
-    apagarNevoa(0.2, 0.85, canvas.width * 0.35); 
-}
-
-function apagarNevoa(pctX, pctY, raio) {
-    const eixoX = canvas.width * pctX;
-    const eixoY = canvas.height * pctY;
-    ctx.globalCompositeOperation = 'destination-out'; 
-    const gradient = ctx.createRadialGradient(eixoX, eixoY, raio * 0.1, eixoX, eixoY, raio);
-    gradient.addColorStop(0, 'rgba(0,0,0,1)'); 
-    gradient.addColorStop(0.7, 'rgba(0,0,0,0.5)'); 
-    gradient.addColorStop(1, 'rgba(0,0,0,0)'); 
-    ctx.fillStyle = gradient;
-    ctx.beginPath(); ctx.arc(eixoX, eixoY, raio, 0, Math.PI * 2, false); ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
-    tocarBipeRadar();
-}
-
-// --- MÁQUINA DE ESTADOS (ROTEIRO DO JOGO E GPS SIMULADO) ---
-
-// Simula a chegada física via GPS (Botões do Debug Menu)
-function simularGPS(ponto) {
-    const texto = document.getElementById('texto-narrativo');
-    
-    // Desativa o botão que acabou de ser clicado no Debug
-    document.getElementById(`btn-dbg-${ponto}`).disabled = true;
-
-    if (ponto === 2) {
-        // PONTO 2: Trilha (Liberação Automática)
-        apagarNevoa(0.2, 0.6, canvas.width * 0.3); // Limpa o caminho do meio
-        texto.innerHTML = "<strong>Ponto 2:</strong> Trilha limpa organicamente. Siga para a coordenada Noroeste (Casa Fox).";
-        document.getElementById('btn-dbg-3').disabled = false; // Libera próximo passo
-    }
-    else if (ponto === 3) {
-        // PONTO 3: Casa Fox (Charada 1)
-        texto.classList.add('hidden'); // Esconde texto de caminhada
-        document.getElementById('box-charada-1').classList.remove('hidden'); // Mostra a charada
-    }
-    else if (ponto === 4) {
-        // PONTO 4: Cruzamento (Liberação Automática)
-        apagarNevoa(0.6, 0.5, canvas.width * 0.35); // Limpa o meio/base
-        texto.innerHTML = "<strong>Ponto 4:</strong> Cruzamento livre. O radar aponta para o setor Leste (Clube Lyra).";
-        document.getElementById('btn-dbg-5').disabled = false;
-    }
-    else if (ponto === 5) {
-        // PONTO 5: Clube Lyra (Charada 2)
-        texto.classList.add('hidden'); 
-        document.getElementById('box-charada-2').classList.remove('hidden');
-    }
-}
-
-// Validação das Charadas
-function resolverCharada(numero, senhaCorreta) {
-    const input = document.getElementById(`resp-${numero}`).value.toLowerCase().trim();
-    const texto = document.getElementById('texto-narrativo');
-    
-    if (input === senhaCorreta) {
-        document.getElementById(`erro-${numero}`).classList.add('hidden');
-        document.getElementById(`box-charada-${numero}`).classList.add('hidden');
-        
-        if (numero === 1) {
-            // Resolveu Casa Fox -> Limpa topo esquerdo -> Manda pro Ponto 4
-            apagarNevoa(0.3, 0.25, canvas.width * 0.45); 
-            texto.innerHTML = "<strong>Setor Noroeste Limpo.</strong> Caminhe de volta pela praça em direção ao Leste.";
-            texto.classList.remove('hidden');
-            document.getElementById('btn-dbg-4').disabled = false; // Libera simulador 4
-        } 
-        else if (numero === 2) {
-            // Resolveu Clube Lyra -> Limpa lado direito -> Clímax!
-            apagarNevoa(0.85, 0.35, canvas.width * 0.5); 
-            
-            document.getElementById('onda').className = "wave stable"; // Radar alinhou
-            document.getElementById('box-conclusao').classList.remove('hidden');
-            
-            // Esconde o painel de debug, pois a caminhada acabou
-            document.getElementById('debug-menu').classList.add('hidden'); 
-        }
-    } else {
-        document.getElementById(`erro-${numero}`).classList.remove('hidden');
-    }
-}
-
-// Clímax: O Cadeado Final
-function abrirMaleta() {
-    const inputSenha = document.getElementById('senha-maleta').value.toLowerCase().trim();
-    if(inputSenha === "teste3") {
-        alert("🎉 ATO DEMO CONCLUÍDO! (A maleta abriu. Aqui entrariam as 3 campanhas).");
-    } else {
-        document.getElementById('erro-senha').classList.remove('hidden');
-    }
-}
-
-// Efeito Sonoro
-function tocarBipeRadar() {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    oscillator.type = 'sine'; oscillator.frequency.value = 1200;
-    const gainNode = audioCtx.createGain();
-    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-    oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
-    oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.3);
-}
+/* ========================================= */
+/* MENU SPOOFER (AGORA COM MINIMIZAR)        */
+/* ========================================= */
+.debug-panel { position: fixed; bottom: 10px; right: 10px; background: rgba(50, 10, 80, 0.95); border: 2px solid #ff00ff; border-radius: 8px; z-index: 9999; box-shadow: 0 0 15px rgba(255, 0, 255, 0.4); width: 250px; overflow: hidden; transition: 0.3s;}
+.debug-header { background: #ff00ff; color: #fff; padding: 8px 10px; font-size: 0.8rem; font-weight: bold; display: flex; justify-content: space-between; cursor: pointer; }
+.debug-content { padding: 10px; display: block;}
+.debug-content.minimized { display: none; }
+.debug-panel button { display: block; width: 100%; background: #220033; color: #fff; border: 1px solid #ffaa00; padding: 8px; font-size: 0.75rem; margin-bottom: 5px; cursor: pointer; border-radius: 3px; font-weight: bold;}
+.debug-panel button:disabled { opacity: 0.3; cursor: not-allowed; border-color: #555;}
+.debug-panel button:hover:not(:disabled) { background: #ffaa00; color: #000; }
