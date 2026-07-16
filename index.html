@@ -4,116 +4,167 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guia Detetive | Ato Demo</title>
-    <!-- O truque do ?v=3 força o celular a baixar o CSS novo! -->
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
     <div class="container">
-        
-        <!-- TELA 1: INTRODUÇÃO E NARRATIVA -->
+        <!-- TELA DE INTRODUÇÃO -->
         <div id="tela-intro" class="screen active">
+            <span class="label">Manifesto de Carga - Agosto, 1899</span>
             <h1>Guia Detetive</h1>
-            <p class="subtitle">Ato Demo: A Maleta do Maquinista</p>
-            
-            <div class="alert-box">
-                <p>🎧 <strong>AVISO DE IMERSÃO</strong></p>
-                <p>Para ouvir as interceptações de rádio, use fones de ouvido.</p>
+            <p class="subtitle">Interceptação de Sinal: Paranapiacaba</p>
+            <div class="intro-panel">
+                <p>O transporte de café era apenas a fachada perfeita. A verdadeira missão da Coroa Britânica era usar o maior maquinário de tração a cabo do mundo para arrastar um "Artefato Estrangeiro" serra acima.</p>
+                <p>O erro dos engenheiros foi a arrogância. Esta terra já era um ponto de convergência de forças antigas. Quando o maquinário industrial atracou a anomalia na vila, a antiga magia da montanha colidiu com o peso de ferro do artefato. A realidade local quebrou.</p>
+                <p>Eu, Arthur, o Maquinista Chefe, descobri as plantas falsificadas. Mas conforme leio estes números, sinto o espaço-tempo se distorcer e a neblina apagar o rosto da minha própria filha da memória. Escondi a maleta. Ligue o interceptador e siga o rastro antes que a névoa consuma tudo.</p>
             </div>
-
-            <div class="story-box">
-                <p><em>"Diário de Investigação, Dia 1."</em></p>
-                <p>Encontrei a maleta abandonada próxima à passarela. Ela está trancada com um cadeado de quatro dígitos e emite um sinal de rádio contínuo, porém distorcido.</p>
-                <p>A neblina magnética desta vila está causando estática no meu equipamento. O mapa está cego. Preciso caminhar pelas ruas para calibrar o sinal, quebrar as criptografias locais e descobrir o epicentro dessa transmissão.</p>
-            </div>
-            <button class="btn" onclick="iniciarMissao()">Ligar Interceptor de Frequência</button>
+            <button id="btn-start" class="btn action">LIGAR INTERCEPTADOR DE MEMÓRIAS</button>
         </div>
 
-        <!-- TELA 2: MAPA DE NÉVOA, RADAR E MISSÕES -->
+        <!-- TELA DE INVESTIGAÇÃO -->
         <div id="tela-investigacao" class="screen hidden">
-            <h2>Radar Ativo</h2>
-            
-            <!-- O Radar de Proximidade -->
-            <div class="oscilloscope"><div id="onda" class="wave chaotic"></div></div>
-            <p id="status-sinal" class="morse-tip">Sinal: Caótico (Ruído Alto). Calibrando...</p>
-
-            <!-- O MAPA COM A NÉVOA -->
-            <div id="mapa-zoom-container" class="fog-container">
-                <img src="assets/mapa_zoom.png" id="mapa-fundo" class="mapa-fundo" alt="Mapa Zoom">
-                <canvas id="fog-canvas" class="fog-canvas"></canvas>
+            <div class="top-bar">
+                <div>
+                    <span class="stage-label" id="map-stage">Ato I: Casa Fox</span>
+                    <p class="signal-label" id="signal-label">Sinal: Espectro visual ativado...</p>
+                </div>
+                <div class="pulse-meter"><div id="wave" class="wave chaotic"></div></div>
             </div>
 
-            <!-- PAINEL DE NARRATIVA E CHARADAS -->
+            <div class="map-section">
+                <div class="fog-container">
+                    <img src="assets/mapa_zoom.png" id="mapa-fundo" class="mapa-fundo" alt="Mapa da serra" onerror="this.src='https://via.placeholder.com/600x400/1a1a1a/444444?text=MAPA+TOPOGRAFICO'">
+                    <canvas id="fog-canvas" class="fog-canvas"></canvas>
+                    <div class="fog-label">NÉVOA MAGNÉTICA</div>
+                </div>
+            </div>
+
             <div class="mission-panel">
-                
-                <p id="texto-narrativo" class="instruction">
-                    <strong>📍 Ponto de Origem:</strong> O chiado é ensurdecedor aqui no Largo dos Padeiros. O radar indica uma anomalia ao Noroeste. Caminhe até a Antiga Padaria/Casa Fox para limpar a estática do setor.
-                </p>
-
-                <!-- Charada 1 (Casa Fox) -->
-                <div id="box-charada-1" class="charada-box hidden">
-                    <p><strong>⚠️ Interceptação de Áudio:</strong></p>
-                    <p><em>"...eles codificaram a passagem... só quem conhece a energia negra das máquinas pode abrir..."</em></p>
-                    <p>O setor está protegido por uma trava cognitiva. Insira a resposta para limpar a névoa.</p>
-                    <p class="debug-text">[DEBUG] Senha: teste1</p>
-                    <input type="text" id="resp-1" placeholder="A resposta é...">
-                    <button class="btn btn-unlock" onclick="resolverCharada(1, 'teste1')">Quebrar Criptografia 🔓</button>
-                    <p id="erro-1" class="error hidden">Acesso negado. A estática continua.</p>
+                <!-- ATO I: CASUAL (Observação e Matemática Simples) -->
+                <div id="puzzle-fox" class="puzzle-block">
+                    <div class="header-com-audio">
+                        <h3>A Realidade Distorcida</h3>
+                        <button class="btn-audio" onclick="alert('Áudio: Arthur indignado falando sobre a conspiração do Funicular e a Casa Fox.')">▶ OUVIR DIÁRIO 12</button>
+                    </div>
+                    <p><em>"Eu projetei o sistema. Nenhuma carga agrícola exigiria aquela força! A terra está lutando contra a invasão e esmagando a geometria inglesa. O scanner mostra onde a pressão mística rasgou a planta. Conte as feridas e some ao ano em que a máquina acordou."</em></p>
+                    <div class="camera-wrapper">
+                        <div class="camera-screen">
+                            <div class="wireframe-overlay"></div>
+                            <div class="camera-fallback"></div>
+                            <div class="wire-note">Lente Espectral: Ponto de ruptura detectado</div>
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <input type="text" id="input-fox" placeholder="Anomalias + 1899" autocomplete="off">
+                        <button id="btn-fox-submit" class="btn btn-unlock">DECIFRAR CÓDIGO</button>
+                    </div>
+                    <p id="fox-error" class="error hidden">A matemática não bate. Tente novamente.</p>
                 </div>
 
-                <!-- Charada 2 (Clube Lyra) -->
-                <div id="box-charada-2" class="charada-box hidden">
-                    <p><strong>⚠️ Interceptação de Áudio:</strong></p>
-                    <p><em>"...não confie nos cavalheiros do Lyra... eles dançam enquanto escondem o segredo da colina..."</em></p>
-                    <p>Frequência máxima detectada. Quebre o código da elite ferroviária para limpar o lado Leste.</p>
-                    <p class="debug-text">[DEBUG] Senha: teste2</p>
-                    <input type="text" id="resp-2" placeholder="A resposta é...">
-                    <button class="btn btn-unlock" onclick="resolverCharada(2, 'teste2')">Quebrar Criptografia 🔓</button>
-                    <p id="erro-2" class="error hidden">Acesso negado. A estática continua.</p>
+                <!-- ATO II: COMPETITIVO (Precisão de Giroscópio e Agilidade) -->
+                <div id="puzzle-patio" class="puzzle-block hidden">
+                    <div class="header-com-audio">
+                        <h3>A Culpa Intragável</h3>
+                        <button class="btn-audio" onclick="alert('Áudio: Arthur chorando, confessando que trouxe o Artefato e pedindo para achar as 3 memórias no Pátio.')">▶ OUVIR DIÁRIO 19</button>
+                    </div>
+                    <p><em>"Fui eu quem pilotou a locomotiva maldita. A radiação está devorando minha mente. Minhas lembranças ficaram presas no pátio: O Tempo, a Força, o Caminho. Sintonize o aparelho e mantenha o foco para capturá-las. Depois, subtraia a Força do Tempo."</em></p>
+                    
+                    <div class="gyro-screen">
+                        <div class="gyro-ring" id="gyro-ring">
+                            <div class="gyro-pointer"></div>
+                            <div id="gyro-hint" class="gyro-hint">Bússola: 0°</div>
+                        </div>
+                        <div class="capture-bar-container">
+                            <div id="capture-bar" class="capture-bar"></div>
+                        </div>
+                        <p id="capture-status" class="small-note">Alinhe com o alvo e mantenha imóvel por 3 segundos.</p>
+                        <div id="gyro-targets" class="gyro-targets"></div>
+                    </div>
+                    
+                    <div class="input-row" style="margin-top: 10px;">
+                        <label for="gyro-debug-slider" style="font-size: 0.75rem; color: #888;">Debug: Rotacione para achar 40°, 145° e 305°</label>
+                        <input type="range" id="gyro-debug-slider" min="0" max="360" value="0">
+                    </div>
+
+                    <div id="patio-deduction-area" class="input-row locked" style="margin-top: 20px;">
+                        <p class="small-note" style="color:#00ff00;">Memórias recuperadas! Insira a Frequência (Tempo - Força):</p>
+                        <input type="text" id="input-patio" placeholder="Frequência (Ex: 1045)" autocomplete="off" disabled>
+                        <button id="btn-patio-submit" class="btn btn-unlock" disabled>INJETAR FREQUÊNCIA</button>
+                    </div>
+                    <p id="patio-error" class="error hidden">Frequência incorreta.</p>
                 </div>
 
-                <!-- Conclusão (O Ponto Cego) -->
-                <div id="box-conclusao" class="hidden">
-                    <p class="morse-tip" style="color: #ff4444; font-size: 0.95rem;">
-                        <strong>ALERTA MÁXIMO:</strong> O chiado sumiu. A varredura revelou a cidade inteira... mas olhe o mapa! O único lugar submerso nas sombras é o Castelinho. O sinal vem lá de dentro!
-                    </p>
-                    <button class="btn btn-unlock" onclick="mudarTela('tela-investigacao', 'tela-cadeado')">Subir a Colina</button>
+                <!-- ATO III: HARDCORE (Pressão de Tempo e Dedução Tátil) -->
+                <div id="puzzle-lyra" class="puzzle-block hidden">
+                    <div class="header-com-audio">
+                        <h3>A Revolta e o Sacrifício</h3>
+                        <button class="btn-audio" onclick="alert('Áudio: Arthur revoltado. Orquestra e vazamento de vapor ao fundo.')">▶ OUVIR DIÁRIO 22</button>
+                    </div>
+                    
+                    <!-- O TIMER HARDCORE -->
+                    <div class="hardcore-timer-container">
+                        <span id="hardcore-timer" class="timer-display">03:00</span>
+                        <p class="timer-label">PURGA DE PRESSÃO EMINENTE</p>
+                    </div>
+
+                    <p><em>"Eles roubam nossa sanidade para alimentar o Artefato no porão. Sabotei o sistema. Descubra a matemática na arquitetura deles: Colunas, Datas, Degraus. Gire as válvulas e sobrecarregue a pressão antes que o sistema purgue!"</em></p>
+                    
+                    <div class="valve-bank" id="valve-bank">
+                        <div class="valve" data-valve="1">
+                            <div class="knob" id="valve-knob-1"></div>
+                            <span class="valve-label">V1: Colunas</span>
+                            <div class="valve-value" id="valve-value-1">14 PSI</div>
+                        </div>
+                        <div class="valve" data-valve="2">
+                            <div class="knob" id="valve-knob-2"></div>
+                            <span class="valve-label">V2: Data/Degraus</span>
+                            <div class="valve-value" id="valve-value-2">18 PSI</div>
+                        </div>
+                        <div class="valve" data-valve="3">
+                            <div class="knob" id="valve-knob-3"></div>
+                            <span class="valve-label">V3: Fator X</span>
+                            <div class="valve-value" id="valve-value-3">12 PSI</div>
+                        </div>
+                    </div>
+                    <p id="valve-note" class="small-note">As pressões devem ser exatas. Risco de colapso.</p>
+                    <button id="btn-lyra-submit" class="btn btn-unlock hardcore-btn">SOBRECARREGAR SISTEMA</button>
                 </div>
 
+                <!-- O CLÍMAX -->
+                <div id="puzzle-future" class="puzzle-block hidden">
+                    <h3>O Núcleo da Anomalia</h3>
+                    <p>A neblina foi expurgada, revelando um breu absoluto sobre o Castelinho.</p>
+                    <p>As anotações param aqui. O rádio silenciou. O artefato aguarda no ponto mais alto.</p>
+                    <button id="btn-final-screen" class="btn action">INVADIR O CASTELINHO</button>
+                </div>
             </div>
         </div>
 
-        <!-- TELA 3: CADEADO FINAL (Castelinho) -->
+        <!-- TELA DO CADEADO FINAL -->
         <div id="tela-cadeado" class="screen hidden">
             <h2>O Ponto Cego</h2>
             <div class="story-box">
-                <p>O ar está gelado. O aplicativo rastreou a origem exata do sinal: ele vem de dentro da sua maleta, e ecoa na fachada do Castelinho.</p>
+                <p>"O código não reside no mundo físico. Para abrir a maleta, você deve enviar um sinal para a rede externa, onde as almas modernas se refletem. Fotografe a escuridão, marque a nossa página no Instagram, e aguarde a revelação do bot."</p>
             </div>
-            <div class="padlock-box">
-                <p>Encontre a raiz da vila. Qual o código final para abrir a maleta?</p>
-                <p class="debug-text">[DEBUG] Senha: teste3</p>
-                <input type="text" id="senha-maleta" placeholder="Código de 4 dígitos">
-                <button class="btn btn-unlock" onclick="abrirMaleta()">Tentar Abrir 🔓</button>
-                <p id="erro-senha" class="error hidden">Cadeado travado. Senha incorreta.</p>
+            <div class="final-panel">
+                <label for="final-password">Transmissão Recebida (Senha)</label>
+                <input type="text" id="final-password" placeholder="Código de 4 dígitos" autocomplete="off">
+                <button id="btn-final" class="btn btn-unlock">DESBLOQUEAR ARTEFATO</button>
             </div>
         </div>
-
     </div>
 
-    <!-- PAINEL FLUTUANTE DE DESENVOLVEDOR (DEBUG) -->
-    <div id="debug-menu" class="debug-panel hidden">
-        <div class="debug-header" onclick="toggleDebug()">
-            <span>⚙️ SPOOFER GPS</span>
+    <!-- PAINEL DE DEBUG DINÂMICO -->
+    <div id="debug-menu" class="debug-panel hidden" aria-hidden="true">
+        <div class="debug-header" onclick="toggleDebugPanel()">
+            <span>⚙️ MODO DIRETOR</span>
             <span id="debug-toggle-icon">[-]</span>
         </div>
         <div id="debug-content" class="debug-content">
-            <button id="btn-dbg-2" onclick="simularGPS(2)">🚶 Andar até Ponto 2</button>
-            <button id="btn-dbg-3" onclick="simularGPS(3)" disabled>📍 Chegar na Casa Fox</button>
-            <button id="btn-dbg-4" onclick="simularGPS(4)" disabled>🚶 Andar até Ponto 4</button>
-            <button id="btn-dbg-5" onclick="simularGPS(5)" disabled>📍 Chegar no Clube Lyra</button>
+            <p class="debug-status"><strong>GABARITO:</strong> <span id="debug-hint-text" style="color:#00ff00;">Aguardando...</span></p>
         </div>
     </div>
 
-    <!-- O truque do ?v=3 força o celular a baixar o JS novo! -->
-    <script src="script.js?v=3"></script>
+    <script src="script.js?v=12"></script>
 </body>
 </html>
