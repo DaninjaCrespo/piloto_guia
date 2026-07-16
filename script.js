@@ -1,167 +1,295 @@
-// --- GERENCIAMENTO GERAL ---
-function mudarTela(telaOcultar, telaMostrar) {
-    document.getElementById(telaOcultar).classList.add('hidden');
-    document.getElementById(telaMostrar).classList.remove('hidden');
-}
+const STAGE_DATA = {
+    fox: {
+        label: 'Ato I: Casa Fox',
+        fog: { x: 0.22, y: 0.62, radius: 0.28 },
+        hint: "Digite: 1902 (Ex: 3 anomalias + 1899)"
+    },
+    patio: {
+        label: 'Ato II: Pátio Ferroviário',
+        fog: { x: 0.52, y: 0.46, radius: 0.32 },
+        hint: "Pare o Slider em 40, 145 e 305 por 3s. Senha: 1045"
+    },
+    lyra: {
+        label: 'Ato III: Clube Lyra',
+        fog: { x: 0.78, y: 0.38, radius: 0.28 },
+        hint: "Corra! V1=28, V2=64, V3=82"
+    },
+    future: {
+        label: 'O Ponto Cego',
+        fog: { x: 0.50, y: 0.50, radius: 1.5 },
+        hint: "Instagram Bot: 1867"
+    }
+};
+
+const FINAL_PASSWORD = '1867';
+const ORIENTATION_TARGETS = [40, 145, 305];
+const ORIENTATION_TOLERANCE = 15;
+const VALVE_TARGETS = { 1: 28, 2: 64, 3: 82 };
+const VALVE_TOLERANCE = 5; // Mais rigoroso no hardcore
+
+let stageSolved = { fox: false, patio: false, lyra: false };
+
+// Variáveis Ato II (Competitivo)
+let orientationAngle = 0;
+let orientationReadings = [false, false, false];
+let captureProgress = 0;
+let capturingIndex = -1;
+let gyroInterval = null;
+
+// Variáveis Ato III (Hardcore Timer)
+let valveState = { 1: 14, 2: 18, 3: 12 };
+let activeKnob = null;
+let timerInterval = null;
+let timeLeft = 180; // 3 minutos
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('btn-start')?.addEventListener('click', iniciarMissao);
+    document.getElementById('btn-fox-submit')?.addEventListener('click', submitFoxPassword);
+    document.getElementById('btn-patio-submit')?.addEventListener('click', submitPatioPassword);
+    document.getElementById('btn-lyra-submit')?.addEventListener('click', completeLyraPuzzle);
+    document.getElementById('btn-final-screen')?.addEventListener('click', () => mudarTela('tela-investigacao', 'tela-cadeado'));
+    document.getElementById('btn-final')?.addEventListener('click', checkFinalPassword);
+    
+    document.getElementById('gyro-debug-slider')?.addEventListener('input', ({ target }) => {
+        orientationAngle = Number(target.value);
+        document.getElementById('gyro-hint').textContent = `Bússola: ${orientationAngle}°`;
+    });
+
+    const knobs = document.querySelectorAll('.knob');
+    knobs.forEach(knob => {
+        knob.addEventListener('pointerdown', event => {
+            event.preventDefault();
+            const valveId = Number(knob.parentElement?.getAttribute('data-valve'));
+            activeKnob = { element: knob, id: valveId, startY: event.clientY, startValue: valveState[valveId] };
+            knob.setPointerCapture(event.pointerId);
+        });
+    });
+    document.addEventListener('pointermove', handleValvePointerMove);
+    document.addEventListener('pointerup', () => (activeKnob = null));
+});
 
 function iniciarMissao() {
-    try {
-        mudarTela('tela-intro', 'tela-investigacao');
-        document.getElementById('debug-menu').classList.remove('hidden');
-        
-        // Pequeno atraso para garantir que a aba do mapa abriu antes de desenhar a névoa
-        setTimeout(inicializarNevoa, 300);
-    } catch (erro) {
-        alert("Erro no script: " + erro.message);
-    }
+    mudarTela('tela-intro', 'tela-investigacao');
+    document.getElementById('debug-menu')?.classList.remove('hidden');
+    updateStageUI();
+    updateGyroTargets();
+    
+    // Inicia o loop de leitura do Giroscópio para o Ato II
+    gyroInterval = setInterval(checkGyroCapture, 100); 
 }
 
-// --- DEBUG SPOOFER (MINIMIZAR/MAXIMIZAR) ---
-function toggleDebug() {
-    const content = document.getElementById('debug-content');
-    const icon = document.getElementById('debug-toggle-icon');
-    if (content.classList.contains('minimized')) {
-        content.classList.remove('minimized');
-        icon.innerText = "[-]";
+function mudarTela(hideId, showId) {
+    document.getElementById(hideId)?.classList.replace('active', 'hidden');
+    document.getElementById(showId)?.classList.replace('hidden', 'active');
+}
+
+function updateStageUI() {
+    const nextStage = stageSolved.lyra ? 'future' : (stageSolved.patio ? 'lyra' : (stageSolved.fox ? 'patio' : 'fox'));
+    
+    document.getElementById('map-stage').textContent = STAGE_DATA[nextStage].label;
+    
+    ['fox', 'patio', 'lyra', 'future'].forEach(stage => {
+        document.getElementById(`puzzle-${stage}`).classList.add('hidden');
+    });
+    document.getElementById(`puzzle-${nextStage}`).classList.remove('hidden');
+    document.getElementById('debug-hint-text').textContent = STAGE_DATA[nextStage].hint;
+
+    // Dispara eventos específicos da fase
+    if (nextStage === 'lyra' && !timerInterval) iniciarTimerHardcore();
+}
+
+// ================= ATO 1: CASUAL =================
+function submitFoxPassword() {
+    const input = document.getElementById('input-fox');
+    const error = document.getElementById('fox-error');
+    if (input.value.trim() === '1902') {
+        error.classList.add('hidden');
+        stageSolved.fox = true;
+        updateStageUI();
     } else {
-        content.classList.add('minimized');
-        icon.innerText = "[+]";
+        error.classList.remove('hidden');
+        shakeElement(input);
+        if (navigator.vibrate) navigator.vibrate(200);
     }
 }
 
-// --- LÓGICA DA NÉVOA ORGÂNICA ---
-let canvas, ctx, mapaImg;
-
-function inicializarNevoa() {
-    try {
-        canvas = document.getElementById('fog-canvas');
-        ctx = canvas.getContext('2d');
-        mapaImg = document.getElementById('mapa-fundo');
-
-        // Garante que o canvas tem o mesmo tamanho da imagem na tela
-        canvas.width = mapaImg.clientWidth || 300; 
-        canvas.height = mapaImg.clientHeight || 300;
-
-        // Fundo Cinza
-        ctx.fillStyle = "rgba(40, 45, 45, 0.96)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Limpa a área inicial (Largo dos Padeiros)
-        apagarNevoa(0.2, 0.85, canvas.width * 0.35); 
-    } catch (erro) {
-        console.log("Erro na névoa: " + erro.message);
-    }
+// ================= ATO 2: COMPETITIVO (HOLD CAPTURE) =================
+function updateGyroTargets() {
+    const container = document.getElementById('gyro-targets');
+    container.innerHTML = '';
+    ORIENTATION_TARGETS.forEach(() => {
+        const span = document.createElement('span');
+        span.textContent = '✖ SINAL';
+        container.appendChild(span);
+    });
 }
 
-function apagarNevoa(pctX, pctY, raio) {
-    const eixoX = canvas.width * pctX;
-    const eixoY = canvas.height * pctY;
-    
-    ctx.globalCompositeOperation = 'destination-out'; 
-    const gradient = ctx.createRadialGradient(eixoX, eixoY, raio * 0.1, eixoX, eixoY, raio);
-    gradient.addColorStop(0, 'rgba(0,0,0,1)'); 
-    gradient.addColorStop(0.7, 'rgba(0,0,0,0.5)'); 
-    gradient.addColorStop(1, 'rgba(0,0,0,0)'); 
-    
-    ctx.fillStyle = gradient;
-    ctx.beginPath(); 
-    ctx.arc(eixoX, eixoY, raio, 0, Math.PI * 2, false); 
-    ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
-    
-    tocarBipeRadar();
-}
+function checkGyroCapture() {
+    if (stageSolved.patio || stageSolved.fox === false) return;
 
-// --- ROTEIRO DO JOGO E RADAR ---
-function atualizarRadar(statusVisual, textoSinal) {
-    document.getElementById('onda').className = `wave ${statusVisual}`;
-    document.getElementById('status-sinal').innerText = textoSinal;
-}
+    let foundTargetIndex = -1;
+    const targets = document.querySelectorAll('#gyro-targets span');
 
-function simularGPS(ponto) {
-    const texto = document.getElementById('texto-narrativo');
-    document.getElementById(`btn-dbg-${ponto}`).disabled = true;
+    // Verifica se está apontando para algum alvo não descoberto
+    ORIENTATION_TARGETS.forEach((target, index) => {
+        if (orientationReadings[index]) return; 
+        const delta = Math.abs(Math.min(360 - Math.abs(orientationAngle - target), Math.abs(orientationAngle - target)));
+        if (delta <= ORIENTATION_TOLERANCE) {
+            foundTargetIndex = index;
+        }
+    });
 
-    if (ponto === 2) {
-        apagarNevoa(0.2, 0.6, canvas.width * 0.3);
-        atualizarRadar('moderate', 'Sinal: Ruído caindo... A frequência parece reagir à madeira dos casarões.');
-        texto.innerHTML = "<strong>🚶 Em Movimento:</strong> A estática diminuiu. Continue subindo a rua principal até que a interferência bloqueie o radar novamente (Perto da Casa Fox).";
-        document.getElementById('btn-dbg-3').disabled = false;
-    }
-    else if (ponto === 3) {
-        atualizarRadar('chaotic', 'Sinal: Bloqueado! Interceptação detectada.');
-        texto.classList.add('hidden'); 
-        document.getElementById('box-charada-1').classList.remove('hidden');
-    }
-    else if (ponto === 4) {
-        apagarNevoa(0.6, 0.5, canvas.width * 0.35);
-        atualizarRadar('moderate', 'Sinal: Estabilizando. Direcionamento ativo.');
-        texto.innerHTML = "<strong>🚶 Em Movimento:</strong> O chiado quase sumiu, mas a agulha aponta para o Leste, para os domínios da elite. Caminhe até o Clube Lyra.";
-        document.getElementById('btn-dbg-5').disabled = false;
-    }
-    else if (ponto === 5) {
-        atualizarRadar('chaotic', 'Sinal: Bloqueio Máximo! Resolva o código.');
-        texto.classList.add('hidden'); 
-        document.getElementById('box-charada-2').classList.remove('hidden');
-    }
-}
+    const progressBar = document.getElementById('capture-bar');
+    const statusText = document.getElementById('capture-status');
 
-function resolverCharada(numero, senhaCorreta) {
-    const input = document.getElementById(`resp-${numero}`).value.toLowerCase().trim();
-    const texto = document.getElementById('texto-narrativo');
-    
-    if (input === senhaCorreta) {
-        document.getElementById(`erro-${numero}`).classList.add('hidden');
-        document.getElementById(`box-charada-${numero}`).classList.add('hidden');
-        
-        if (numero === 1) {
-            apagarNevoa(0.3, 0.25, canvas.width * 0.45); 
-            atualizarRadar('chaotic', 'Sinal: Caótico. Reposicionando antena...');
-            texto.innerHTML = "<strong>✅ Criptografia Quebrada.</strong> O setor Noroeste está limpo. O rádio recalibrou. Retorne o caminho e siga para o Leste.";
-            texto.classList.remove('hidden');
-            document.getElementById('btn-dbg-4').disabled = false;
-        } 
-        else if (numero === 2) {
-            apagarNevoa(0.85, 0.35, canvas.width * 0.5); 
-            atualizarRadar('stable', 'Sinal: Puro e Cristalino. Origem Detectada.');
-            document.getElementById('box-conclusao').classList.remove('hidden');
-            document.getElementById('debug-menu').classList.add('hidden'); 
+    if (foundTargetIndex !== -1) {
+        // Está no alvo! Aumenta a barra de captura (3 segundos = 30 ticks de 100ms)
+        if (capturingIndex !== foundTargetIndex) {
+            capturingIndex = foundTargetIndex;
+            captureProgress = 0;
+        }
+        captureProgress += (100 / 30); 
+        progressBar.style.width = `${captureProgress}%`;
+        statusText.textContent = "Alvo localizado! Mantenha imóvel...";
+        statusText.style.color = "#ffaa00";
+
+        if (captureProgress >= 100) {
+            // Capturado!
+            orientationReadings[foundTargetIndex] = true;
+            targets[foundTargetIndex].textContent = '✔ MEMÓRIA';
+            targets[foundTargetIndex].style.color = '#00ff00';
+            capturingIndex = -1;
+            captureProgress = 0;
+            progressBar.style.width = `0%`;
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // Haptic Feedback
+            checkAllMemoriesCaptured();
         }
     } else {
-        document.getElementById(`erro-${numero}`).classList.remove('hidden');
+        // Saiu do alvo, zera a barra
+        capturingIndex = -1;
+        captureProgress = 0;
+        progressBar.style.width = `0%`;
+        statusText.textContent = "Gire para procurar os 3 ecos no ambiente.";
+        statusText.style.color = "#b2b09a";
     }
 }
 
-function abrirMaleta() {
-    const inputSenha = document.getElementById('senha-maleta').value.toLowerCase().trim();
-    if(inputSenha === "teste3") {
-        alert("🎉 A MALETA SE ABRIU! O Ato Demo foi um sucesso.");
+function checkAllMemoriesCaptured() {
+    const count = orientationReadings.filter(Boolean).length;
+    if (count === ORIENTATION_TARGETS.length) {
+        document.getElementById('patio-deduction-area').classList.remove('locked');
+        document.getElementById('input-patio').disabled = false;
+        document.getElementById('btn-patio-submit').disabled = false;
+        document.getElementById('capture-status').textContent = "Todas as memórias capturadas!";
+        document.getElementById('capture-status').style.color = "#00ff00";
+    }
+}
+
+function submitPatioPassword() {
+    const input = document.getElementById('input-patio');
+    if (input.value.trim() === '1045') {
+        stageSolved.patio = true;
+        clearInterval(gyroInterval);
+        updateStageUI();
     } else {
-        document.getElementById('erro-senha').classList.remove('hidden');
+        shakeElement(input);
+        if (navigator.vibrate) navigator.vibrate(200);
     }
 }
 
-// --- MOTOR DE ÁUDIO BLINDADO ---
-function tocarBipeRadar() {
-    try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return; 
+// ================= ATO 3: HARDCORE (TIMER + VÁLVULAS) =================
+function iniciarTimerHardcore() {
+    const display = document.getElementById('hardcore-timer');
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        let minutos = Math.floor(timeLeft / 60);
+        let segundos = timeLeft % 60;
+        display.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
         
-        const audioCtx = new AudioContext();
-        const oscillator = audioCtx.createOscillator();
-        oscillator.type = 'sine'; 
-        oscillator.frequency.value = 800;
-        
-        const gainNode = audioCtx.createGain();
-        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        
-        oscillator.connect(gainNode); 
-        gainNode.connect(audioCtx.destination);
-        
-        oscillator.start(); 
-        oscillator.stop(audioCtx.currentTime + 0.3);
-    } catch (e) {
-        console.log("Áudio bloqueado pelo navegador, continuando silenciosamente.");
+        // Efeito de tensão final
+        if (timeLeft <= 30) {
+            display.classList.add('critical');
+            if (timeLeft % 2 === 0 && navigator.vibrate) navigator.vibrate(50); // Batimento cardíaco
+        }
+
+        if (timeLeft <= 0) {
+            vazamentoCritico();
+        }
+    }, 1000);
+}
+
+function vazamentoCritico() {
+    clearInterval(timerInterval);
+    const box = document.getElementById('puzzle-lyra');
+    box.classList.add('shake');
+    box.style.background = "rgba(100, 0, 0, 0.9)";
+    document.getElementById('valve-note').textContent = "VAZAMENTO CRÍTICO! O SISTEMA REINICIOU.";
+    document.getElementById('valve-note').style.color = "#ff0000";
+    if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 1000]);
+    
+    // Penalidade e Reset
+    setTimeout(() => {
+        box.classList.remove('shake');
+        box.style.background = "";
+        valveState = { 1: 14, 2: 18, 3: 12 };
+        resetValveUI();
+        timeLeft = 180; // Reseta o tempo (pode ajustar como quiser)
+        iniciarTimerHardcore();
+        document.getElementById('valve-note').textContent = "As pressões devem ser exatas. Risco de colapso.";
+        document.getElementById('valve-note').style.color = "#b2b09a";
+        document.getElementById('hardcore-timer').classList.remove('critical');
+    }, 3000);
+}
+
+function handleValvePointerMove(event) {
+    if (!activeKnob) return;
+    const delta = activeKnob.startY - event.clientY;
+    const newValue = Math.min(100, Math.max(0, activeKnob.startValue + Math.round(delta / 2)));
+    valveState[activeKnob.id] = newValue;
+    document.getElementById(`valve-value-${activeKnob.id}`).textContent = `${newValue} PSI`;
+    activeKnob.element.style.transform = `rotate(${newValue * 2.5}deg)`;
+}
+
+function resetValveUI() {
+    Object.entries(valveState).forEach(([id, value]) => {
+        const el = document.getElementById(`valve-value-${id}`);
+        if(el) el.textContent = `${value} PSI`;
+        const knob = document.getElementById(`valve-knob-${id}`);
+        if(knob) knob.style.transform = `rotate(${value * 2.5}deg)`;
+    });
+}
+
+function completeLyraPuzzle() {
+    const valid = Object.entries(VALVE_TARGETS).every(([id, target]) => {
+        return Math.abs(valveState[id] - target) <= VALVE_TOLERANCE;
+    });
+    if (valid) {
+        clearInterval(timerInterval); // Salvo pelo gongo!
+        stageSolved.lyra = true;
+        updateStageUI();
+    } else {
+        shakeElement(document.getElementById('valve-bank'));
+        if (navigator.vibrate) navigator.vibrate(200);
+        document.getElementById('valve-note').textContent = 'Pressão instável! Ajuste imediatamente!';
+        document.getElementById('valve-note').style.color = '#ffaa00';
     }
+}
+
+// ================= FINAL =================
+function checkFinalPassword() {
+    const input = document.getElementById('final-password');
+    if (input.value.trim() === FINAL_PASSWORD) {
+        alert('MALETA ABERTA! Parabéns, você sobreviveu ao Guia Detetive!');
+    } else {
+        shakeElement(input);
+    }
+}
+
+function toggleDebugPanel() {
+    document.getElementById('debug-content').classList.toggle('minimized');
+}
+
+function shakeElement(el) {
+    el.classList.add('shake');
+    setTimeout(() => el.classList.remove('shake'), 360);
 }
